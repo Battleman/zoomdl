@@ -8,22 +8,45 @@ except ModuleNotFoundError:
 import re
 
 
-def main(url, fname=None):
-    page = requests.get(url)
-    cookies = page.cookies
+def main(url, fname=None, password=None):
+    session = requests.session()
+    page = session.get(url)
+    if password is not None:
+        # that shit has a password
+        # first look for the meet_id
+        meet_id_regex = re.compile("<input[^>]*")
+        for inp in meet_id_regex.findall(page.text):
+            input_split = inp.split()
+            if input_split[2] == 'id="meetId"':
+                meet_id = input_split[3][7:-1]
+                break
+        # create POST request
+        data = {"id": meet_id, "passwd": password, "action": "viewdetailpage"}
+        check_url = "https://epfl.zoom.us/rec/validate_meet_passwd"
+        session.post(check_url, data=data)
+        session.headers.update(
+            {'referer': "https://epfl.zoom.us/"})  # IMPORTANT
+        page = session.get(url)  # get as if nothing
 
     url_regexp = re.compile('https.*ssrweb.zoom.us[^\"]*')
-    vid_url = url_regexp.search(page.text)[0]
+    try:
+        vid_url = url_regexp.search(page.text)[0]
+    except TypeError:
+        print("Unable to open url {}. Are you sure there is no password, or have you entered it correctly?".format(url))
+        sys.exit(1)
     name, extension = vid_url.split("?")[0].split("/")[-1].split(".")
     if fname is not None:
         name = fname
-    print("Downloading...")
-    vid = requests.get(vid_url, cookies=cookies, stream=True)
+    print("Downloading...", session.cookies)
+    vid = session.get(vid_url, cookies=session.cookies, stream=True)
     if vid.status_code == 200:
         with open("{}.{}".format(name, extension), "wb") as f:
             for chunk in vid:
                 f.write(chunk)
-    print("Done!")
+        print("Done!")
+    else:
+        print("Woops, error downloading:", url)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -41,7 +64,10 @@ if __name__ == "__main__":
                         required=True,
                         metavar="zoom url")
     PARSER.add_argument("-f", "--filename",
-                        help="The name of the output video file. Default to the filename according to Zoom",
+                        help="The name of the output video file without extension. Default to the filename according to Zoom. Extension is automatic.",
                         metavar="filename")
+    PARSER.add_argument("-p", "--password",
+                        help="Password of the video (if any)",
+                        metavar="password")
     args = PARSER.parse_args()
-    main(args.url, args.filename)
+    main(args.url, args.filename, args.password)
