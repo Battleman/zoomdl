@@ -37,7 +37,7 @@ def main(url, fname=None, password=None):
     name, extension = vid_url.split("?")[0].split("/")[-1].split(".")
     if fname is not None:
         name = fname
-    print("Downloading...", session.cookies)
+    print("Downloading...")
     vid = session.get(vid_url, cookies=session.cookies, stream=True)
     if vid.status_code == 200:
         with open("{}.{}".format(name, extension), "wb") as f:
