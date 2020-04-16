@@ -2,7 +2,7 @@ import sys
 import argparse
 try:
     import requests
-except ModuleNotFoundError:
+except ImportError:
     print("Module 'requests' required. Install it with 'pip install requests' or 'conda install requests'")
     sys.exit(1)
 import re
@@ -11,6 +11,10 @@ import re
 def main(url, fname=None, password=None):
     session = requests.session()
     page = session.get(url)
+    domain_re = re.compile("https://([^.]+)\.zoom.us")
+    domain = domain_re.match(url).group(1)
+    session.headers.update(
+            {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
     if password is not None:
         # that shit has a password
         # first look for the meet_id
@@ -22,18 +26,16 @@ def main(url, fname=None, password=None):
                 break
         # create POST request
         data = {"id": meet_id, "passwd": password, "action": "viewdetailpage"}
-        check_url = "https://epfl.zoom.us/rec/validate_meet_passwd"
+        check_url = "https://{}.zoom.us/rec/validate_meet_passwd".format(domain)
         session.post(check_url, data=data)
-        session.headers.update(
-            {'referer': "https://epfl.zoom.us/"})  # IMPORTANT
         page = session.get(url)  # get as if nothing
 
-    url_regexp = re.compile('https.*ssrweb.zoom.us[^\"]*')
-    try:
-        vid_url = url_regexp.search(page.text)[0]
-    except TypeError:
+    url_regexp = re.compile('http.*ssrweb.zoom.us[^\"]*')
+    match = url_regexp.search(page.text)
+    if match is None:
         print("Unable to open url {}. Are you sure there is no password, or have you entered it correctly?".format(url))
         sys.exit(1)
+    vid_url = match.group()
     name, extension = vid_url.split("?")[0].split("/")[-1].split(".")
     if fname is not None:
         name = fname
@@ -45,7 +47,7 @@ def main(url, fname=None, password=None):
                 f.write(chunk)
         print("Done!")
     else:
-        print("Woops, error downloading:", url)
+        print("Woops, error downloading: '{}'".format(url))
         sys.exit(1)
 
 
