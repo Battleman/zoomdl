@@ -11,7 +11,7 @@ import re
 def main(url, fname=None, password=None):
     session = requests.session()
     page = session.get(url)
-    domain_re = re.compile("https://([^.]+)\.zoom.us")
+    domain_re = re.compile("https://([^.]*)\.?zoom.us")
     domain = domain_re.match(url).group(1)
     session.headers.update(
             {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
