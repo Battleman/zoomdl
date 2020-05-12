@@ -1,15 +1,11 @@
+#/usr/bin/env python3
 import sys
 import os
-import argparse
-try:
-    import requests
-except ImportError:
-    print("Module 'requests' required. Install it with 'pip install requests' or 'conda install requests'")
-    sys.exit(1)
+# import requests
 import re
 
 
-def main(url, fname=None, password=None):
+def zoomdl(url, fname=None, password=None):
     session = requests.session()
     page = session.get(url)
     domain_re = re.compile("https://([^.]*)\.?zoom.us")
@@ -62,27 +58,3 @@ def main(url, fname=None, password=None):
     else:
         print("Woops, error downloading: '{}'".format(url))
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    PARSER = argparse.ArgumentParser(
-        description="Utility to download zoom videos",
-        prog="zoomdl",
-        formatter_class=lambda prog: argparse.HelpFormatter(prog,
-                                                            max_help_position=10,
-                                                            width=200)
-    )
-
-    PARSER.add_argument("-u", "--url",
-                        help="Enter the url of the video to download. Looks like 'zoom.us/rec/play/...'",
-                        type=str,
-                        required=True,
-                        metavar="zoom url")
-    PARSER.add_argument("-f", "--filename",
-                        help="The name of the output video file without extension. Default to the filename according to Zoom. Extension is automatic.",
-                        metavar="filename")
-    PARSER.add_argument("-p", "--password",
-                        help="Password of the video (if any)",
-                        metavar="password")
-    args = PARSER.parse_args()
-    main(args.url, args.filename, args.password)
