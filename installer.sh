@@ -1,5 +1,5 @@
 #!/bin/bash
-PYTHON="/usr/bin/env python"
+PYTHON="/usr/bin/env python3"
 EXEC="zoomdl"
 ZIP="zoomdl.zip"
 ZIP_FOLDER="zip"
@@ -11,8 +11,7 @@ compile(){
 	mv $ZIP_FOLDER/$SRC/__main__.py $ZIP_FOLDER #put main above src
 	pip install -r requirements.txt --target $ZIP_FOLDER
 	rm -r $ZIP_FOLDER/*.dist-info
-	python3 -m  zipapp -p "interpreter" -o $EXEC
-
+	python3 -m  zipapp -p "$PYTHON" -o $EXEC $ZIP_FOLDER
 	rm -rf $ZIP_FOLDER
 }
 
