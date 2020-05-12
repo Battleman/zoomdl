@@ -1,4 +1,5 @@
 import sys
+import os
 import argparse
 try:
     import requests
@@ -15,6 +16,11 @@ def main(url, fname=None, password=None):
     domain = domain_re.match(url).group(1)
     session.headers.update(
             {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
+    if fname is not None:
+        if fname[0] != "/":
+            # asserting relative name
+            fname = os.getcwd()+"/"+fname
+
     if password is not None:
         # that shit has a password
         # first look for the meet_id
@@ -38,7 +44,14 @@ def main(url, fname=None, password=None):
     vid_url = match.group()
     name, extension = vid_url.split("?")[0].split("/")[-1].split(".")
     if fname is not None:
-        name = fname
+        if fname[0] == "/":
+            # absolute path is provided, keep as is
+            name = fname
+        else:
+            # path probably is relative
+            name = os.getcwd() + "/" + fname
+    else:
+        name = os.getcwd() + "/" + name
     print("Downloading...")
     vid = session.get(vid_url, cookies=session.cookies, stream=True)
     if vid.status_code == 200:
