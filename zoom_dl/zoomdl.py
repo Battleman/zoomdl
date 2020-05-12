@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+# /usr/bin/env python3
 import sys
 import os
 import requests
@@ -11,7 +11,7 @@ def zoomdl(url, fname=None, password=None):
     domain_re = re.compile("https://([^.]*)\.?zoom.us")
     domain = domain_re.match(url).group(1)
     session.headers.update(
-            {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
+        {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
     if fname is not None:
         if fname[0] != "/":
             # asserting relative name
@@ -28,7 +28,8 @@ def zoomdl(url, fname=None, password=None):
                 break
         # create POST request
         data = {"id": meet_id, "passwd": password, "action": "viewdetailpage"}
-        check_url = "https://{}.zoom.us/rec/validate_meet_passwd".format(domain)
+        check_url = "https://{}.zoom.us/rec/validate_meet_passwd".format(
+            domain)
         session.post(check_url, data=data)
         page = session.get(url)  # get as if nothing
 
@@ -48,13 +49,35 @@ def zoomdl(url, fname=None, password=None):
             name = os.getcwd() + "/" + fname
     else:
         name = os.getcwd() + "/" + name
+    filepath = "{}.{}".format(name, extension)
+    # print(filepath)
+    if os.path.isfile(filepath):
+        if not confirm("File {} already exists. This will erase it".format(filepath)):
+            print("Aborting")
+            sys.exit(0)
+
     print("Downloading...")
     vid = session.get(vid_url, cookies=session.cookies, stream=True)
     if vid.status_code == 200:
-        with open("{}.{}".format(name, extension), "wb") as f:
+        with open(filepath, "wb") as f:
             for chunk in vid:
                 f.write(chunk)
         print("Done!")
     else:
         print("Woops, error downloading: '{}'".format(url))
         sys.exit(1)
+
+
+def confirm(message):
+    """
+    Ask user to enter Y or N (case-insensitive).
+
+    Inspired and adapted from
+    https://gist.github.com/gurunars/4470c97c916e7b3c4731469c69671d06
+
+    `return` {bool} True if the answer is Y.
+    """
+    answer = None
+    while answer not in ["y", "n", ""]:
+        answer = input(message + " Continue? [y/N]: ").lower()
+    return answer == "y"
