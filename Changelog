@@ -1,0 +1,12 @@
+version 2020.05.12
+
+- Created changelog :)
+- Replacing python script with bundle
+    Now there is no more need to install dependencies. Just have a viable
+    python version.
+- Adding compiling and installing script, for devs
+- Downloading will now occur at location of calling, not location of script
+- Because of the architecture, it now should get easier to build for Windows (for future)
+
+Earlier versions:
+- Well, created the script.
