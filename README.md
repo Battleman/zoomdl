@@ -20,7 +20,10 @@ If there is a domain in your url, make sure to include it, it's crucial.
 * `-p/--password` is too optional. Set it when your video has a password.
 
 ## Requirements
-Only very standard modules are necessary: `requests`, `re`, `argparse` and `sys`. The 3 latter should be included in any python distribution, while the former is standard, and easy to install (try `pip install requests` or `conda install requests`).
+All dependencies are bundled with the repository. This allows to make a standalone execution without need for external libraries. The most important requirement is [requests](https://github.com/psf/requests). Please see [acknowledgements](#acknowledgements) for a note on that.
+
+## Acknowledgements
+The folder [requests](./requests) is a dump of [requests](https://github.com/psf/requests), an awesome wrapper for HTTP(s) calls. Please check them out!
 
 ## Support
 Like this project? Consider supporting me, for more awesome updates
