@@ -8,10 +8,10 @@ import re
 def zoomdl(url, fname=None, password=None):
     session = requests.session()
     page = session.get(url)
-    domain_re = re.compile("https://([^.]*)\.?zoom.us")
+    domain_re = re.compile("https://([^.]*\.?)zoom.us")
     domain = domain_re.match(url).group(1)
     session.headers.update(
-        {'referer': "https://{}.zoom.us/".format(domain)})  # IMPORTANT
+        {'referer': "https://{}zoom.us/".format(domain)})  # IMPORTANT
     if fname is not None:
         if fname[0] != "/":
             # asserting relative name
@@ -28,7 +28,7 @@ def zoomdl(url, fname=None, password=None):
                 break
         # create POST request
         data = {"id": meet_id, "passwd": password, "action": "viewdetailpage"}
-        check_url = "https://{}.zoom.us/rec/validate_meet_passwd".format(
+        check_url = "https://{}zoom.us/rec/validate_meet_passwd".format(
             domain)
         session.post(check_url, data=data)
         page = session.get(url)  # get as if nothing
