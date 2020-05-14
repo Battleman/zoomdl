@@ -1,5 +1,5 @@
 version 2020.05.14
-- Corrected mistake in the handling of domains. Shouldn't face "UnicodeError: encoding with 'idna' codec failed (UnicodeError: label empty or too long)" anymore
+- Corrected #6: mistake in the handling of domains. Shouldn't face "UnicodeError: encoding with 'idna' codec failed (UnicodeError: label empty or too long)" anymore
 
 version 2020.05.12
 
