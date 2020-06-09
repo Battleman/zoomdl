@@ -3,6 +3,7 @@ import sys
 import os
 import requests
 import re
+import platform
 
 
 def zoomdl(url, fname=None, password=None):
@@ -12,10 +13,6 @@ def zoomdl(url, fname=None, password=None):
     domain = domain_re.match(url).group(1)
     session.headers.update(
         {'referer': "https://{}zoom.us/".format(domain)})  # IMPORTANT
-    if fname is not None:
-        if fname[0] != "/":
-            # asserting relative name
-            fname = os.getcwd()+"/"+fname
 
     if password is not None:
         # that shit has a password
@@ -40,21 +37,8 @@ def zoomdl(url, fname=None, password=None):
         sys.exit(1)
     vid_url = match.group()
     name, extension = vid_url.split("?")[0].split("/")[-1].split(".")
-    if fname is not None:
-        if fname[0] == "/":
-            # absolute path is provided, keep as is
-            name = fname
-        else:
-            # path probably is relative
-            name = os.getcwd() + "/" + fname
-    else:
-        name = os.getcwd() + "/" + name
-    filepath = "{}.{}".format(name, extension)
-    # print(filepath)
-    if os.path.isfile(filepath):
-        if not confirm("File {} already exists. This will erase it".format(filepath)):
-            print("Aborting")
-            sys.exit(0)
+
+    filepath = get_filepath(fname, name, extension)
 
     print("Downloading...")
     vid = session.get(vid_url, cookies=session.cookies, stream=True)
@@ -81,3 +65,19 @@ def confirm(message):
     while answer not in ["y", "n", ""]:
         answer = input(message + " Continue? [y/N]: ").lower()
     return answer == "y"
+
+
+def get_filepath(user_fname, file_fname, extension):
+    """Create an filepath."""
+    if user_fname is None:
+        basedir = os.getcwd()
+        name = os.path.join(basedir, file_fname)
+    else:
+        name = os.path.abspath(user_fname)
+    filepath = "{}.{}".format(name, extension)
+    # check file doesn't already exist
+    if os.path.isfile(filepath):
+        if not confirm("File {} already exists. This will erase it".format(filepath)):
+            print("Aborting")
+            sys.exit(0)
+    return filepath
