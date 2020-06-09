@@ -5,6 +5,10 @@ ZIP="zoomdl.zip"
 ZIP_FOLDER="zip"
 LOCALBIN="/usr/local/bin/"
 SRC="zoom_dl"
+clean(){
+	rm -r build dist zoomdl.exe.spec
+}
+
 compile(){
 	mkdir -p $ZIP_FOLDER #create folder to zip
 	cp -r $SRC $ZIP_FOLDER #copy all python files
@@ -22,7 +26,8 @@ install(){
 
 if [[ $# -ne 1 ]]
 then
-		echo "Please input one command such as 'compile' or 'install'"
+		echo "Usage: $0 'command'"
+		echo "Valid commands: 'clean', 'compile', 'install'"
 		exit 1
 else
 	"$@"
