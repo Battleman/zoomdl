@@ -1,3 +1,8 @@
+version 2020.06.09
+- Added more info about #7 in the README, about quotes on Linux
+- Refractored the path creation to be more robust, and OS-agnostic
+- Added an executable for Windows (beta)
+
 version 2020.05.14
 - Corrected #6: mistake in the handling of domains. Shouldn't face "UnicodeError: encoding with 'idna' codec failed (UnicodeError: label empty or too long)" anymore
 
