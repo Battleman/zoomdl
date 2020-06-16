@@ -1,3 +1,9 @@
+version 2020.06.16
+- Added option for downloading "series" of videos (one url for multiple clips), using -c
+- Started to use a custom User-Agent (based on Windows)
+- New User-Agent allows for better parsing of metadata
+- Default filename is now the topic of the session, instead of the ugly full name.
+
 version 2020.06.09
 - Added more info about #7 in the README, about quotes on Linux
 - Refractored the path creation to be more robust, and OS-agnostic

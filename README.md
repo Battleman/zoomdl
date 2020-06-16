@@ -29,10 +29,15 @@ There are 2 type of valid urls.
 
 If there is a domain in your url, make sure to include it, it's crucial.
 ## Usage
-`zoomdl [-h] -u/--url "url" [-f/--fname "filename"] [-p/--password "password"]`
+`zoomdl [-h] -u/--url "url" [-f/--fname "filename"] [-p/--password "password"] [-c/--count-clips count]`
 * `-u/--url` is mandatory, it represents the URL of the video
 * `-f/--fname` is optional, it is the name of the resulting file _without extension_. If nothing is provided, the default name given by Zoom will be used. Extension (`.mp4`, `.mkv`,... is automatic)
 * `-p/--password` is too optional. Set it when your video has a password.
+* `-c/--count-clips`: Sometimes, one URL can contain multiple clips. This tunes the number of clips that will be downloaded. Recordings with multiple clips seem to be quite rare, but do exist. The parameter `count` works as follow:
+  * 0 means: download all of them (starting from the current clip)
+  * 1 means: download only the first/given clip
+  * \> 1 means: download until you reach this number of clip (or the end)
+
 
 ### About quotes [IMPORTANT]
 The quotes are not mandatory, but if your filename/url/password/... contains reserved characters (`\`, `&`, `$`,`%`...), quotes are the way to go.
