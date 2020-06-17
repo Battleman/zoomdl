@@ -6,7 +6,7 @@ import sys
 def check_positive(value):
     """Ensure a given value is a positive integer"""
     ivalue = int(value)
-    if ivalue <= 0:
+    if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
 

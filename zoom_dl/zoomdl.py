@@ -54,9 +54,9 @@ def zoomdl(args):
             nextTime = get_meta("nextClipStartTime", page.text)
             currTime = get_meta("clipStartTime", page.text)
             if currTime in url:
-                url = url.replace(currTime)
+                url = url.replace(currTime, nextTime)
             else:
-                url += "startTime={}".format(nextTime)
+                url += "&startTime={}".format(nextTime)
             page = session.get(url)
 
 
