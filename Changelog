@@ -1,9 +1,14 @@
+version 2020.06.22
+- Fixing #13
+- With new metadata method, some clips didn't work any more, fixed.
+
 version 2020.06.17
+/!\ Contains major bugs (#13), upgrade to 2020.06.22 or later
 - Fixing #10 again
-- Option -c 0 now works
-- Downloading multiple clips now doesn't download only the first one multiple times
+- Option -c 0 now works- Downloading multiple clips now doesn't download only the first one multiple times
 
 version 2020.06.16
+/!\ Contains major bugs (#13), upgrade to 2020.06.22 or later
 - Added option for downloading "series" of videos (one url for multiple clips), using -c
 - Started to use a custom User-Agent (based on Windows)
 - New User-Agent allows for better parsing of metadata
