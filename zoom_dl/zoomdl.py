@@ -13,13 +13,14 @@ def zoomdl(args):
     domain = domain_re.match(url).group(1)
     session.headers.update({
         'referer': "https://{}zoom.us/".format(domain),  # set referer
-        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                       "AppleWebKit/537.36 (KHTML, like Gecko) "
-                       "Chrome/74.0.3729.169 "
-                       "Safari/537.36")  # somehow standard User-Agent
+        # "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        #                "AppleWebKit/537.36 (KHTML, like Gecko) "
+        #                "Chrome/74.0.3729.169 "
+        #                "Safari/537.36")  # somehow standard User-Agent
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0"
     })
 
-    if "password" in args:
+    if args.password is not None:
         # that shit has a password
         # first look for the meet_id
         meet_id_regex = re.compile("<input[^>]*")
@@ -37,10 +38,11 @@ def zoomdl(args):
         session.post(check_url, data=data)
         page = session.get(url)  # get as if nothing
 
-    total_clips = get_meta("totalClips", page.text, int)
-    current_clip = get_meta("currentClip", page.text, int)
+    metadata = get_meta(page.text)
+    total_clips = metadata["totalClips"]
+    current_clip = metadata["currentClip"]
     count_clips = args.count_clips
-    filename = None if "filename" not in args else args.filename
+    filename = args.filename
     if count_clips == 1:  # only download this
         download_vid(page, session, filename)
     else:  # download multiple
@@ -51,8 +53,8 @@ def zoomdl(args):
         for clip in range(current_clip, to_download+1):
             download_vid(page, session, filename, clip)
             url = page.url
-            nextTime = get_meta("nextClipStartTime", page.text)
-            currTime = get_meta("clipStartTime", page.text)
+            nextTime = metadata["nextClipStartTime"]
+            currTime = metadata["clipStartTime"]
             if currTime in url:
                 url = url.replace(currTime, nextTime)
             else:
@@ -60,21 +62,29 @@ def zoomdl(args):
             page = session.get(url)
 
 
-def get_meta(field, text, ret_type=str):
-    search = re.search("{}: ['\"]?([^\"',]+)['\"]?".format(field), text)
-    if search is None:
-        print("Unable to find {} in page".format(field))
+def get_meta(text):
+    """Get metadata by trying multiple ways."""
+    # default case
+    meta = dict(re. findall('id="([^"]*)" value="([^"]*)"', text))
+    # if javascript was correctly loaded
+    meta2 = dict(re.findall("\s?(\w+): [\"' ]*([^\"',]*)[\"' ]*,", text))
+    meta.update(meta2)
+    if len(meta) == 0:
+        print("Unable to gather metadata in page")
         return None
-    else:
-        return ret_type(search.group(1))
-
-
+    if "viewMp4Url" not in meta:
+        vid_url = re.search("source src=[\"'](https?://ssrweb[^\"']+)[\"']",
+                            text).group(1)
+        meta["url"] = vid_url
+    return meta
 
 
 def download_vid(page, session, fname, clip=None):
-    vid_url = get_meta("viewMp4Url", page.text)
+    metadata = get_meta(page.text)
+    vid_url = metadata.get("viewMp4Url") or metadata.get("url")
     extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
-    name = get_meta("topic", page.text).replace(" ", "_")
+    name = (metadata.get("topic") or metadata.get(
+        "r_meeting_topic")).replace(" ", "_")
     name = name if clip is None else "{}-{}".format(name, clip)
     filepath = get_filepath(fname, name, extension)
     if filepath is None:
