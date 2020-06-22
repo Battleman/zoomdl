@@ -1,11 +1,12 @@
 #!/bin/bash
 PYTHON="/usr/bin/env python3"
 EXEC="zoomdl"
-ZIP="zoomdl.zip"
+# ZIP="zoomdl.zip"
 ZIP_FOLDER="zip"
 LOCALBIN="/usr/local/bin/"
 SRC="zoom_dl"
 clean(){
+	cp dist/zoomdl.exe .
 	rm -r build dist zoomdl.exe.spec
 }
 
