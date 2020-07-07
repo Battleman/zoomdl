@@ -1,3 +1,9 @@
+version 2020.07.07
+- Changing layout to be OOP
+- Adding log-level printing (#7)
+- Adapting issue template accordingly
+- Starting to prepare for batch urls download (#1)
+
 version 2020.06.22
 - Fixing #13
 - With new metadata method, some clips didn't work any more, fixed.
