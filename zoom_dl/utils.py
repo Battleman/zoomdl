@@ -59,9 +59,9 @@ def parseOpts():
                         metavar="level",
                         type=int,
                         default=1)
-    PARSER.add_argument("-b", "--browser",
-                        help=("Indicate the browser from which retrieve the "
-                              "cookies, to bypass passwords and reCAPTCHA. "
-                              "Currently supported: Firefox and Chrome."),
-                        metavar="Browser")
+    # PARSER.add_argument("-b", "--browser",
+    #                     help=("Indicate the browser from which retrieve the "
+    #                           "cookies, to bypass passwords and reCAPTCHA. "
+    #                           "Currently supported: Firefox and Chrome."),
+    #                     metavar="Browser")
     return PARSER.parse_args()
