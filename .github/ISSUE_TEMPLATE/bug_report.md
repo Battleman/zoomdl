@@ -6,7 +6,8 @@ labels: bug
 assignees: Battleman
 
 ---
-**Prerequisite**
+## PLEASE FILL IN THE TEMPLATE BELOW, DON'T SIMPLY ERASE EVERYTHING. ISSUES NOT FOLLOWING THIS TEMPLATE WILL NOT BE CONSIDERED.
+**Prerequisite** Tick (`[ ] --> [x]`) if you have done the following:
 - [ ] I have updated to the latest version,
 - [ ] (If applicable) I have ensured the password is correct with the flag `-v 0`,
 - [ ] I have searched the opened issues for a duplicate,
