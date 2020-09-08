@@ -1,3 +1,9 @@
+version 2020.09.08
+- Added progress bar when downloading (#18)
+- Made metadata searching more robust (#19)
+- Fixed metadata not found correctly
+- Some code styling and more debug
+
 version 2020.07.07
 - Changing layout to be OOP
 - Adding log-level printing (#7)
