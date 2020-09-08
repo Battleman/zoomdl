@@ -7,7 +7,7 @@ LOCALBIN="/usr/local/bin/"
 SRC="zoom_dl"
 clean(){
 	cp dist/zoomdl.exe .
-	rm -r build dist zoomdl.exe.spec
+	rm -r build dist zoomdl.spec
 }
 
 compile(){
