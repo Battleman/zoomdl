@@ -5,6 +5,7 @@ import sys
 import os
 import requests
 import re
+from clint.textui import progress
 # import browser_cookie3
 
 
@@ -99,8 +100,12 @@ class ZoomDL():
         vid = self.session.get(vid_url, stream=True)
         if vid.status_code == 200:
             with open(filepath, "wb") as f:
-                for chunk in vid:
-                    f.write(chunk)
+                total_size = int(vid.headers.get('content-length'))
+                for chunk in progress.bar(vid.iter_content(chunk_size=1024),
+                                          expected_size=total_size/1024 + 1):
+                    if chunk:
+                        f.write(chunk)
+                        f.flush()
             self._print("Done!", 1)
         else:
             self._print("Woops, error downloading: '{}'".format(vid_url), 3)
