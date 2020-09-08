@@ -6,6 +6,7 @@ import os
 import requests
 import re
 from clint.textui import progress
+import yaml
 # import browser_cookie3
 
 
@@ -65,10 +66,17 @@ class ZoomDL():
         """Get metadata by trying multiple ways."""
         # default case
         text = self.page.text
-        meta = dict(re. findall(r'id="([^"]*)" value="([^"]*)"', text))
-        # if javascript was correctly loaded
-        meta2 = dict(re.findall(r"\s?(\w+): [\"' ]*([^\"',]*)[\"' ]*,", text))
-        meta.update(meta2)
+        meta = dict(re.findall(r'type="hidden" id="([^"]*)" value="([^"]*)"',
+                               text))
+
+        # if javascript was correctly loaded, look for injected metadata
+        meta2_match = re.search("window.__data__ = ({(?:.*\n)*})",
+                                self.page.text)
+        if meta2_match is not None:
+            meta2 = yaml.full_load(meta2_match.group(1))
+            meta.update(meta2)
+        else:
+            self._print("Advanced meta failed", 0)
         self._print("Metas are {}".format(meta), 0)
         if len(meta) == 0:
             self._print("Unable to gather metadata in page")
@@ -86,10 +94,10 @@ class ZoomDL():
         """Download one recording, and save it at fname."""
         vid_url = self.metadata.get("viewMp4Url") or self.metadata.get("url")
         extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
-        name = (self.metadata.get("topic") or self.metadata.get(
-            "r_meeting_topic")).replace(" ", "_")
-        self._print(("Found name is {},"
-                     "extension is {}").format(name, extension), 0)
+        name = (self.metadata.get("topic") or
+                self.metadata.get("r_meeting_topic")).replace(" ", "_")
+        self._print("Found name is {}, extension is {}"
+                    .format(name, extension), 0)
         name = name if clip is None else "{}-{}".format(name, clip)
         filepath = get_filepath(fname, name, extension)
         if filepath is None:
@@ -115,9 +123,7 @@ class ZoomDL():
     def download(self, all_urls):
         """Exposed class to download a list of urls."""
         for url in all_urls:
-            self._change_page(url)
-            domain_re = re.compile(r"https://([^.]*\.?)zoom.us")
-            domain = domain_re.match(url).group(1)
+            domain = re.match(r"https?://([^.]*\.?)zoom.us", url).group(1)
             self.session.headers.update({
                 'referer': "https://{}zoom.us/".format(domain),  # set referer
                 "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -125,6 +131,7 @@ class ZoomDL():
                                "Chrome/74.0.3729.169 "
                                "Safari/537.36")  # somehow standard User-Agent
             })
+            self._change_page(url)
             if self.args.password is not None:
                 # that shit has a password
                 # first look for the meet_id
