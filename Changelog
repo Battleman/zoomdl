@@ -1,3 +1,8 @@
+version 2020.09.14
+- fixed regex for metadata scraping (#22)
+- More robustness and checks
+
+
 version 2020.09.08
 - Added progress bar when downloading (#18)
 - Made metadata searching more robust (#19)
