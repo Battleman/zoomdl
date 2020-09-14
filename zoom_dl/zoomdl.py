@@ -70,13 +70,18 @@ class ZoomDL():
                                text))
 
         # if javascript was correctly loaded, look for injected metadata
-        meta2_match = re.search("window.__data__ = ({(?:.*\n)*})",
+        meta2_match = re.search("window.__data__ = ({(?:.*\n)*});",
                                 self.page.text)
         if meta2_match is not None:
-            meta2 = yaml.full_load(meta2_match.group(1))
+            try:
+                meta2 = yaml.full_load(meta2_match.group(1))
+            except yaml.parser.ParserError:
+                self._print("[WARNING] Error with the meta parsing. This should "
+                      "not be critical. Please contact a dev.", 2)
             meta.update(meta2)
         else:
-            self._print("Advanced meta failed", 0)
+            self._print("Advanced meta failed", 2)
+            # self._print(self.page.text)
         self._print("Metas are {}".format(meta), 0)
         if len(meta) == 0:
             self._print("Unable to gather metadata in page")
@@ -84,10 +89,14 @@ class ZoomDL():
 
         if "viewMp4Url" not in meta:
             self._print("No video URL in meta, going bruteforce", 2)
-            vid_url = re.search((r"source src=[\"']"
-                                 "(https?://ssrweb[^\"']+)[\"']"),
-                                text).group(1)
-            meta["url"] = vid_url
+            vid_url_match = re.search((r"source src=[\"']"
+                                       "(https?://ssrweb[^\"']+)[\"']"),
+                                      text)
+            if vid_url_match is None:
+                self._print("[ERROR] Video not found in page. Is it login-protected? ",
+                            4)
+                return None
+            meta["url"] = vid_url_match.group(1)
         return meta
 
     def download_vid(self, fname, clip=None):
@@ -152,6 +161,9 @@ class ZoomDL():
                 self._change_page(url)  # get as if nothing
 
             self.metadata = self.get_page_meta()
+            if self.metadata is None:
+                self._print("Unable to find metadata, aborting.", 4)
+                return None
             total_clips = self.metadata["totalClips"]
             current_clip = self.metadata["currentClip"]
             count_clips = self.args.count_clips
