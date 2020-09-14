@@ -76,8 +76,8 @@ class ZoomDL():
             try:
                 meta2 = yaml.full_load(meta2_match.group(1))
             except yaml.parser.ParserError:
-                self._print("[WARNING] Error with the meta parsing. This should "
-                      "not be critical. Please contact a dev.", 2)
+                self._print("[WARNING] Error with the meta parsing. This "
+                            "should not be critical. Please contact a dev.", 2)
             meta.update(meta2)
         else:
             self._print("Advanced meta failed", 2)
@@ -93,8 +93,8 @@ class ZoomDL():
                                        "(https?://ssrweb[^\"']+)[\"']"),
                                       text)
             if vid_url_match is None:
-                self._print("[ERROR] Video not found in page. Is it login-protected? ",
-                            4)
+                self._print("[ERROR] Video not found in page. "
+                            "Is it login-protected? ", 4)
                 return None
             meta["url"] = vid_url_match.group(1)
         return meta
