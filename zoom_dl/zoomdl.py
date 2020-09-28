@@ -6,7 +6,7 @@ import os
 import requests
 import re
 from clint.textui import progress
-import yaml
+import demjson
 # import browser_cookie3
 
 
@@ -74,8 +74,8 @@ class ZoomDL():
                                 self.page.text)
         if meta2_match is not None:
             try:
-                meta2 = yaml.full_load(meta2_match.group(1))
-            except yaml.parser.ParserError:
+                meta2 = demjson.decode(meta2_match.group(1))
+            except demjson.JSONDecodeError:
                 self._print("[WARNING] Error with the meta parsing. This "
                             "should not be critical. Please contact a dev.", 2)
             meta.update(meta2)
