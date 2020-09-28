@@ -5,10 +5,6 @@ EXEC="zoomdl"
 ZIP_FOLDER="zip"
 LOCALBIN="/usr/local/bin/"
 SRC="zoom_dl"
-clean(){
-	cp dist/zoomdl.exe .
-	rm -r build dist zoomdl.spec
-}
 
 compile(){
 	mkdir -p $ZIP_FOLDER #create folder to zip
@@ -20,9 +16,13 @@ compile(){
 	rm -rf $ZIP_FOLDER
 }
 
+build(){
+	compile
+}
+
 install(){
 	compile
-	sudo mv $EXEC $LOCALBIN
+	sudo cp $EXEC $LOCALBIN
 }
 
 if [[ $# -ne 1 ]]
