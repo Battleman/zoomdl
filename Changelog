@@ -1,3 +1,6 @@
+version 2020.09.28
+- Fixed metadata scraping with quotes in title (#24)
+
 version 2020.09.14
 - fixed regex for metadata scraping (#22)
 - More robustness and checks
