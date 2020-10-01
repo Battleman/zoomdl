@@ -68,7 +68,6 @@ class ZoomDL():
         text = self.page.text
         meta = dict(re.findall(r'type="hidden" id="([^"]*)" value="([^"]*)"',
                                text))
-
         # if javascript was correctly loaded, look for injected metadata
         meta2_match = re.search("window.__data__ = ({(?:.*\n)*});",
                                 self.page.text)
@@ -105,6 +104,8 @@ class ZoomDL():
         extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
         name = (self.metadata.get("topic") or
                 self.metadata.get("r_meeting_topic")).replace(" ", "_")
+        if self.args.filename_add_date and self.metadata.get("r_meeting_start_time"):
+            name = name + "-" + self.metadata.get("r_meeting_start_time")
         self._print("Found name is {}, extension is {}"
                     .format(name, extension), 0)
         name = name if clip is None else "{}-{}".format(name, clip)
@@ -135,11 +136,18 @@ class ZoomDL():
             domain = re.match(r"https?://([^.]*\.?)zoom.us", url).group(1)
             self.session.headers.update({
                 'referer': "https://{}zoom.us/".format(domain),  # set referer
-                "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                               "AppleWebKit/537.36 (KHTML, like Gecko) "
-                               "Chrome/74.0.3729.169 "
-                               "Safari/537.36")  # somehow standard User-Agent
             })
+            if self.args.user_agent is None:
+                self.session.headers.update({
+                    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                   "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                   "Chrome/74.0.3729.169 "
+                                   "Safari/537.36")  # somehow standard User-Agent
+                })
+            else:
+                self.session.headers.update({
+                    "User-Agent": self.args.user_agent
+                })
             self._change_page(url)
             if self.args.password is not None:
                 # that shit has a password
