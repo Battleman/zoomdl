@@ -18,6 +18,16 @@ The script was developed and tested under GNU/Linux (precisely, Debian 10). Thus
 ## Installation
 ### Linux/OSX
 You need to have a valid Python3 installation. Except from that, just download the script `zoomdl` (not `zoomdl.exe`) and run it like a normal binary. If you wish to make it available system-wide, you can copy it to `/usr/local/bin/` (or anywhere else available in your PATH). Then you can simply use it wherever you want.
+
+The following two commands make that easy. In a terminal, run:
+```bash
+sudo wget https://github.com/Battleman/zoomdl/releases/latest/download/zoomdl -O /usr/bin/zoomdl
+sudo chmod +x /usr/bin/zoomdl
+```
+You will be prompted to enter your password (your computer password, not zoom). It's likely that you won't see anything as you type it, don't worry, it [is normal](https://askubuntu.com/questions/112069/nothing-shows-up-in-the-terminal-when-i-type-my-password) ([even for OSX](https://osxdaily.com/2015/02/04/terminal-wont-show-password-when-typed/))
+
+Once you have done that, you can use your terminal and type the commands normally.
+
 ### Windows
 **This is still in beta**
 Grab the dedicated binary `zoomdl.exe`, and launch it using your command line. If you don't know how, visit [this wikihow](https://www.wikihow.com/Run-an-EXE-File-From-Command-Prompt). You may encounter warning from your anti-virus, you can ignore them (I'm not evil, pinky-promise). You probably don't need a Python3 installation, it *should* be contained within the executable.
@@ -29,7 +39,7 @@ There are 2 type of valid urls.
 
 If there is a domain in your url, make sure to include it, it's crucial.
 ## Usage
-`zoomdl [-h] -u/--url "url" [-f/--fname "filename"] [-p/--password "password"] [-c/--count-clips count]`
+`zoomdl [-h] -u/--url 'url' [-f/--fname 'filename'] [-p/--password 'password'] [-c/--count-clips count] [-d/--filename-add-date] [--user-agent 'custom_user_agent]`
 * `-u/--url` is mandatory, it represents the URL of the video
 * `-f/--fname` is optional, it is the name of the resulting file _without extension_. If nothing is provided, the default name given by Zoom will be used. Extension (`.mp4`, `.mkv`,... is automatic)
 * `-p/--password` is too optional. Set it when your video has a password.
@@ -37,8 +47,23 @@ If there is a domain in your url, make sure to include it, it's crucial.
   * 0 means: download all of them (starting from the current clip)
   * 1 means: download only the first/given clip
   * \> 1 means: download until you reach this number of clip (or the end)
+* `-d/--filename-add-date` will append the date of the recording to the filename. **without effect if `-f` is specified**
+* `--user-agent` (no shorthand notation): lets you specify a custom User-Agent (only do that if you know what you're doing and why)
 
+### About syntax
+I see a lot of people who don't understand what the above means. Here is a short explanation:
+* This is a _command_, with multiple possible _parameters_.
+* Parameters usually have a short version (with one dash, like `-u`) and an equivalent long version (with two dashes, like `--url`); the short and long version are shown separated by a `/`; you must only use one of them.
+* The parameters between square brackets are optional (like `-f`, that allows you to input a custom filename). The others (for the moment, only `-u`) are mandatory.
+* The order of parameters don't matter
+* the `-h` parameter only displays a short help and commands explanation
 
+For example, those are all valid commands (ofc by replacing the URLs):
+```
+zoomdl -u "https://my_url" -f "recording_from_monday"
+zoomdl --url "https://my_url"
+zoomdl -p '$28fn2f8' --filename-add-date --filename "recording_from_tuesday" -u "https://my_url" --user-agent "Windows 10 wonderful User-Agent -v 3"
+```
 ### About quotes [IMPORTANT]
 The quotes are not mandatory, but if your filename/url/password/... contains reserved characters (`\`, `&`, `$`,`%`...), quotes are the way to go.
 
