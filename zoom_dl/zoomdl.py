@@ -104,7 +104,8 @@ class ZoomDL():
         extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
         name = (self.metadata.get("topic") or
                 self.metadata.get("r_meeting_topic")).replace(" ", "_")
-        if self.args.filename_add_date and self.metadata.get("r_meeting_start_time"):
+        if (self.args.filename_add_date and
+                self.metadata.get("r_meeting_start_time")):
             name = name + "-" + self.metadata.get("r_meeting_start_time")
         self._print("Found name is {}, extension is {}"
                     .format(name, extension), 0)
@@ -138,16 +139,23 @@ class ZoomDL():
                 'referer': "https://{}zoom.us/".format(domain),  # set referer
             })
             if self.args.user_agent is None:
-                self.session.headers.update({
-                    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                   "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                   "Chrome/74.0.3729.169 "
-                                   "Safari/537.36")  # somehow standard User-Agent
-                })
+                if self.args.filename_add_date:
+                    self._print("Forcing custom UA to have the date")
+                    # if date is required, need invalid UA
+                    # 'invalid' User-Agent
+                    ua = "ZoomDL http://github.com/battleman/zoomdl"
+                else:
+                    self._print("Using standard Windows UA")
+                    # somehow standard User-Agent
+                    ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/74.0.3729.169 Safari/537.36")
             else:
-                self.session.headers.update({
-                    "User-Agent": self.args.user_agent
-                })
+                ua = self.args.user_agent
+
+            self.session.headers.update({
+                "User-Agent": ua
+            })
             self._change_page(url)
             if self.args.password is not None:
                 # that shit has a password
