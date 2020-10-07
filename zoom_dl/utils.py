@@ -40,6 +40,15 @@ def parseOpts():
                               "extension. Default to the filename according "
                               "to Zoom. Extension is automatic."),
                         metavar="filename")
+    PARSER.add_argument("-d", "--filename-add-date",
+                        help=("Add video meeting date if it is specified. "
+                              "Default is not to include the date."),
+                        default=False,
+                        action='store_true')
+    PARSER.add_argument("--user-agent",
+                        help=("Use custom user agent."
+                              "Default is real browser user agent."),
+                        type=str)
     PARSER.add_argument("-p", "--password",
                         help="Password of the video (if any)",
                         metavar="password")
