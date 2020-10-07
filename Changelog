@@ -1,3 +1,8 @@
+version 2020.10.07
+- Added -filename-add-date and --user-agent options (#27);
+- More detailed installation guide for GNU/Linux and OSX
+- More details about syntax and what it means
+
 version 2020.09.28
 - Fixed metadata scraping with quotes in title (#24)
 
