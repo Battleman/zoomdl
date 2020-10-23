@@ -5,7 +5,7 @@ import sys
 import os
 import requests
 import re
-from clint.textui import progress
+from tqdm import tqdm
 import demjson
 # import browser_cookie3
 
@@ -120,8 +120,12 @@ class ZoomDL():
         if vid.status_code == 200:
             with open(filepath, "wb") as f:
                 total_size = int(vid.headers.get('content-length'))
-                for chunk in progress.bar(vid.iter_content(chunk_size=1024),
-                                          expected_size=total_size/1024 + 1):
+                unit_int, unit_str = ((1024, "KiB") if total_size < 30*1024**2
+                                      else (1024**2, "MiB"))
+                for chunk in tqdm(vid.iter_content(chunk_size=unit_int),
+                                  total=total_size//unit_int + 1,
+                                  unit=unit_str, mininterval=0.2,
+                                  dynamic_ncols=True):
                     if chunk:
                         f.write(chunk)
                         f.flush()
