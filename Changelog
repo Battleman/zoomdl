@@ -1,3 +1,6 @@
+version 2020.10.23
+- Replaced old clint with new tqdm (#28)
+
 version 2020.10.07
 - Added -filename-add-date and --user-agent options (#27);
 - More detailed installation guide for GNU/Linux and OSX
