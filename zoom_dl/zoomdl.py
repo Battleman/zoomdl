@@ -198,8 +198,8 @@ class ZoomDL():
                 for clip in range(current_clip, to_download+1):
                     self.download_vid(filename, clip)
                     url = self.page.url
-                    nextTime = self.metadata["nextClipStartTime"]
-                    currTime = self.metadata["clipStartTime"]
+                    nextTime = str(self.metadata["nextClipStartTime"])
+                    currTime = str(self.metadata["clipStartTime"])
                     if currTime in url:
                         url = url.replace(currTime, nextTime)
                     else:
