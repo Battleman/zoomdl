@@ -236,9 +236,12 @@ def confirm(message):
 
 def get_filepath(user_fname, file_fname, extension):
     """Create an filepath."""
+
     if user_fname is None:
         basedir = os.getcwd()
-        name = os.path.join(basedir, file_fname)
+        name = os.path.join(basedir, (file_fname
+                                      .replace("/", "_")
+                                      .replace("\\", "_")))
     else:
         name = os.path.abspath(user_fname)
     filepath = "{}.{}".format(name, extension)
