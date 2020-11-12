@@ -5,6 +5,11 @@ Like this project? Consider supporting me, for more awesome updates
 
 <a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/Battleman"><img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee"><span style="margin-left:15px;font-size:28px !important;">Buy me a coffee</span></a>
 
+## ANNOUNCEMENT LOOKING FOR TESTERS
+More and more, I face the challenge of testing. I code on my own Debian machine, and use a Windows 10 VM to compile the executable. But testing has become more and more a challenge, especially for new features.
+
+If you are anyhow interested in helping (there are various ways to!), go to the dedicated issue (#32), and comment there. The concept is still very young for me, sorry that.
+
 ## Goal
 Conferences, meetings and presentations held on Zoom are often recorded and stored in the cloud, for a finite amount of time. The host can chose to make them available to download, but it is not mandatory.
 
