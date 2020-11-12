@@ -5,6 +5,9 @@
 import argparse
 
 
+IMPLEMENTED_BROWSERS = ["firefox", "chrome", "chromium"]
+
+
 def _check_positive(value):
     """Ensure a given value is a positive integer."""
     int_value = int(value)
@@ -61,6 +64,12 @@ def parseOpts():
                         metavar="Count",
                         type=_check_positive,
                         default=1)
+    PARSER.add_argument("-b", "--browser",
+                        help=("Specify a browser from which retrieve the "
+                              "cookies. Currently implemented are Firefox, "
+                              "Chrome and Chromium."),
+                        choices=IMPLEMENTED_BROWSERS,
+                        metavar="Browser")
     PARSER.add_argument("-v", "--log-level",
                         help=("Chose the level of verbosity. 0=debug, 1=info "
                               "(default), 2=warning 3=Error, 4=Critical, "
@@ -68,9 +77,4 @@ def parseOpts():
                         metavar="level",
                         type=int,
                         default=1)
-    # PARSER.add_argument("-b", "--browser",
-    #                     help=("Indicate the browser from which retrieve the "
-    #                           "cookies, to bypass passwords and reCAPTCHA. "
-    #                           "Currently supported: Firefox and Chrome."),
-    #                     metavar="Browser")
     return PARSER.parse_args()

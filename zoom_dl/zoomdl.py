@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """Define the main ZoomDL class and its methods."""
+from http.cookiejar import CookieJar
 import sys
 import os
 import requests
 import re
 from tqdm import tqdm
 import demjson
-# import browser_cookie3
+import browser_cookie3
+import webbrowser
+import time
 
 
 class ZoomDL():
@@ -18,7 +21,7 @@ class ZoomDL():
         self.args = args
         self.session = requests.session()
         self.loglevel = self.args.log_level
-        # self._set_cookies(self.args.browser)
+        self._set_cookies(self.args.browser)
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
@@ -44,17 +47,53 @@ class ZoomDL():
         if level < 5 and level >= self.loglevel:
             print(message)
 
-    # def _set_cookies(browser):
-    #     if browser is None:
-    #         pass
-    #     else:
-    #         if browser.lower == "firefox":
-    #             self.session.cookies = browser_cookie3.firefox()
-    #         elif browser.lower == "chrome":
-    #             self.session.cookies = browser_cookie3.chrome()
-    #         else:
-    #             raise ValueError(("Browser {} not understood; "
-    #                               "Use Firefox or Chrome").format(browser))
+    def _set_cookies(self, browser):
+        def has_login_cookies(cookiesjar):
+            cookies_jar.clear_expired_cookies()
+            for c in cookies_jar:
+                if c.name == "_zm_ssid" or c.name == "_zm_kms":
+                    return True
+            return False
+
+        def retrieve_cookies():
+            if browser == "firefox":
+                cookies_jar: CookieJar = browser_cookie3.firefox()
+            elif browser in ("chrome", "chromium"):
+                cookies_jar: CookieJar = browser_cookie3.chrome()
+            else:
+                self._print("Invalid browser {} but not caught...", 0)
+                raise ValueError(("Browser {} not understood; This shouldn't "
+                                  "have happened. Please open an issue on "
+                                  "https://github.com/battleman/zoomdl")
+                                 .format(browser))
+            return cookies_jar
+
+        if browser is None:
+            return CookieJar()
+        try:
+            cookies_jar = retrieve_cookies()
+        except browser_cookie3.BrowserCookieError as e:
+            self._print("Error retrieving cookies. Continuing without cookies",
+                        4)
+            self._print(e, 0)
+            return CookieJar()
+
+        if not has_login_cookies(cookies_jar):
+            self._print(("Unable to find valid cookies from {}. "
+                         "I'll open a new tab or window so you can log "
+                         "in to Zoom.").format(browser), 2)
+            time.sleep(5)
+            if browser == "firefox":
+                nav = webbrowser.Firefox()
+            elif browser == "chrome":
+                nav = webbrowser.Chrome()
+            elif browser == "firefox":
+                nav = webbrowser.Chromium()
+            nav.open(self.args.url)
+            while not has_login_cookies(cookies_jar):
+                time.sleep(2)
+                cookies_jar = retrieve_cookies()
+        return cookies_jar
 
     def _change_page(self, url):
         """Change page, with side methods."""
