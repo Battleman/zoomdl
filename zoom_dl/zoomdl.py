@@ -239,9 +239,9 @@ def get_filepath(user_fname, file_fname, extension):
 
     if user_fname is None:
         basedir = os.getcwd()
-        name = os.path.join(basedir, (file_fname
-                                      .replace("/", "_")
-                                      .replace("\\", "_")))
+        # remove illegal characters
+        name = os.path.join(basedir, re.sub("[/\\\?*:\"|><]+", "_", file_fname))
+
     else:
         name = os.path.abspath(user_fname)
     filepath = "{}.{}".format(name, extension)
