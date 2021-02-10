@@ -7,7 +7,6 @@ import requests
 import re
 from tqdm import tqdm
 import demjson
-# import browser_cookie3
 
 
 class ZoomDL():
@@ -18,6 +17,8 @@ class ZoomDL():
         self.args = args
         self.session = requests.session()
         self.loglevel = self.args.log_level
+        self.page = None
+        self.metadata = {}
         # self._set_cookies(self.args.browser)
 
     def _print(self, message, level=0):
@@ -111,28 +112,38 @@ class ZoomDL():
                     .format(name, extension), 0)
         name = name if clip is None else "{}-{}".format(name, clip)
         filepath = get_filepath(fname, name, extension)
-        if filepath is None:
-            self._print("Filepath is none, interrupting")
-            return
-        self._print("Full filepath is {}".format(filepath), 0)
+        filepath_tmp = filepath + ".part"
+        self._print("Full filepath is {}, temporary is {}".format(
+            filepath, filepath_tmp), 0)
         self._print("Downloading '{}'...".format(filepath.split("/")[-1]), 1)
-        vid = self.session.get(vid_url, stream=True)
-        if vid.status_code == 200:
-            with open(filepath, "wb") as f:
-                total_size = int(vid.headers.get('content-length'))
-                unit_int, unit_str = ((1024, "KiB") if total_size < 30*1024**2
-                                      else (1024**2, "MiB"))
-                for chunk in tqdm(vid.iter_content(chunk_size=unit_int),
-                                  total=total_size//unit_int + 1,
-                                  unit=unit_str, mininterval=0.2,
+        vid_header = self.session.head(vid_url)
+        total_size = int(vid_header.headers.get('content-length'))
+        # unit_int, unit_str = ((1024, "KiB") if total_size < 30*1024**2
+        #                       else (1024**2, "MiB"))
+        start_bytes = int(os.path.exists(filepath_tmp) and
+                          os.path.getsize(filepath_tmp))
+        if start_bytes > 0:
+            self._print("Incomplete file found ({:.2f}%), resuming..."
+                        .format(100*start_bytes/total_size), 1)
+        headers = {"Range": "bytes={}-".format(start_bytes)}
+        vid = self.session.get(vid_url, headers=headers, stream=True)
+        if vid.status_code in [200, 206] and total_size > 0:
+            with open(filepath_tmp, "ab") as f:
+                for chunk in tqdm(vid.iter_content(),
+                                  total=total_size,
+                                  unit_scale=True,
+                                  mininterval=0.2,
+                                  initial=start_bytes,
                                   dynamic_ncols=True):
                     if chunk:
                         f.write(chunk)
                         f.flush()
             self._print("Done!", 1)
+            os.rename(filepath_tmp, filepath)
         else:
             self._print("Woops, error downloading: '{}'".format(vid_url), 3)
-            self._print("Status code: {}".format(vid.status_code), 0)
+            self._print("Status code: {}, file size: {}".format(
+                vid.status_code, total_size), 0)
             sys.exit(1)
 
     def download(self, all_urls):
@@ -162,7 +173,7 @@ class ZoomDL():
             })
             self._change_page(url)
             if self.args.password is not None:
-                # that shit has a password
+                # that sht has a password
                 # first look for the meet_id
                 self._print("Using password '{}'".format(self.args.password))
                 meet_id_regex = re.compile("<input[^>]*")
@@ -198,12 +209,12 @@ class ZoomDL():
                 for clip in range(current_clip, to_download+1):
                     self.download_vid(filename, clip)
                     url = self.page.url
-                    nextTime = str(self.metadata["nextClipStartTime"])
-                    currTime = str(self.metadata["clipStartTime"])
-                    if currTime in url:
-                        url = url.replace(currTime, nextTime)
+                    next_time = str(self.metadata["nextClipStartTime"])
+                    curr_time = str(self.metadata["clipStartTime"])
+                    if curr_time in url:
+                        url = url.replace(curr_time, next_time)
                     else:
-                        url += "&startTime={}".format(nextTime)
+                        url += "&startTime={}".format(next_time)
                     self._change_page(url)
 
     def check_captcha(self):
@@ -240,7 +251,8 @@ def get_filepath(user_fname, file_fname, extension):
     if user_fname is None:
         basedir = os.getcwd()
         # remove illegal characters
-        name = os.path.join(basedir, re.sub("[/\\\?*:\"|><]+", "_", file_fname))
+        name = os.path.join(basedir, re.sub(
+            "[/\\\?*:\"|><]+", "_", file_fname))
 
     else:
         name = os.path.abspath(user_fname)
@@ -249,5 +261,5 @@ def get_filepath(user_fname, file_fname, extension):
     if os.path.isfile(filepath):
         if not confirm("File {} already exists. This will erase it"
                        .format(filepath)):
-            return None
+            sys.exit(0)
     return filepath
