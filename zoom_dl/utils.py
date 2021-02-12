@@ -68,6 +68,13 @@ def parseOpts():
                         metavar="level",
                         type=int,
                         default=1)
+    PARSER.add_argument("-a", "--auth",
+                        help=("Authentication key _zm_kms from cookies "
+                              "cookies, for SSO protected urls."
+                              "Looks like 'aw1_*******'"),
+                        type=str,
+                        default="",
+                        metavar="auth")
     # PARSER.add_argument("-b", "--browser",
     #                     help=("Indicate the browser from which retrieve the "
     #                           "cookies, to bypass passwords and reCAPTCHA. "
