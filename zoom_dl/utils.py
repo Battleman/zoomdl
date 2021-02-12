@@ -69,9 +69,9 @@ def parseOpts():
                         type=int,
                         default=1)
     PARSER.add_argument("-a", "--auth",
-                        help=("Authentication key _zm_kms from cookies "
-                              "cookies, for SSO protected urls."
-                              "Looks like 'aw1_*******'"),
+                        help=("Set SSO Authentication cookies _zm_kms and"
+                              "_km_page_auth cookies cookies"
+                              "Looks like: 'aw1_*******'"),
                         type=str,
                         default="",
                         metavar="auth")
