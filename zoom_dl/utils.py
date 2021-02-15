@@ -78,6 +78,26 @@ def parseOpts():
                         metavar="level",
                         type=int,
                         default=1)
+    # 3 commands on cookies... #FIXME
+    PARSER.add_argument("-r", "--recordmeet",
+                        help=("Enter the _zm_web_recordmeet cookie. "),
+                        type=str,
+                        required=False,
+                        default="",
+                        metavar="recordmeet")
+    PARSER.add_argument("-k", "--kms",
+                        help=("Enter the _zm_kms cookie (for SSO). "),
+                        type=str,
+                        required=False,
+                        default="",
+                        metavar="kms")
+    PARSER.add_argument("-a", "--auth",
+                        help=("Set SSO Authentication cookies _zm_kms and"
+                              "_zm_ssid cookies cookies"
+                              "Looks like: 'aw1_*******'"),
+                        type=str,
+                        default="",
+                        metavar="auth")
     # PARSER.add_argument("-b", "--browser",
     #                     help=("Indicate the browser from which retrieve the "
     #                           "cookies, to bypass passwords and reCAPTCHA. "
