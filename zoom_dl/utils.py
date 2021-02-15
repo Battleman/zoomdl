@@ -69,8 +69,8 @@ def parseOpts():
                         metavar="Count",
                         type=_check_positive,
                         default=1)
-    PARSER.add_argument("--cookies-jar",
-                        help="Path to a custom cookie jar", metavar="Path", type=_valid_path)
+#     PARSER.add_argument("--cookies-jar",
+#                         help="Path to a custom cookie jar", metavar="Path", type=_valid_path)
     PARSER.add_argument("-v", "--log-level",
                         help=("Chose the level of verbosity. 0=debug, 1=info "
                               "(default), 2=warning 3=Error, 4=Critical, "

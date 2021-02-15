@@ -1,3 +1,6 @@
+version 2021.02.15_beta
+- 2 PR about cookies and downloading password/SSO protected recordings (#38, #40). Should fix #20.
+
 version 2021.01.01
 - Happy new year!
 - When using default filename, replace sequences of illegal characters (?":/ and others) by an underscore (#36)
