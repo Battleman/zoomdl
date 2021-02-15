@@ -16,11 +16,17 @@ class ZoomDL():
     def __init__(self, args):
         """Init the class."""
         self.args = args
+        self.loglevel = args.log_level
+
         self.session = requests.session()
+
         self.loglevel = self.args.log_level
+        # setting 3 cookies at once... #FIXME
         if self.args.auth:
             self.session.cookies.set("_zm_ssid", self.args.auth)
             self.session.cookies.set("_zm_kms", self.args.auth)
+        if args.recordmeet: self.session.cookies.set("_zm_web_recordmeet", args.recordmeet)
+        if args.kms: self.session.cookies.set("_zm_kms", args.kms)
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
