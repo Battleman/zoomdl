@@ -70,7 +70,7 @@ def parseOpts():
                         default=1)
     PARSER.add_argument("-a", "--auth",
                         help=("Set SSO Authentication cookies _zm_kms and"
-                              "_km_page_auth cookies cookies"
+                              "_zm_ssid cookies cookies"
                               "Looks like: 'aw1_*******'"),
                         type=str,
                         default="",
