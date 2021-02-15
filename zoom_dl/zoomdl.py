@@ -19,7 +19,7 @@ class ZoomDL():
         self.session = requests.session()
         self.loglevel = self.args.log_level
         if self.args.auth:
-            self.session.cookies.set("_zm_page_auth", self.args.auth)
+            self.session.cookies.set("_zm_ssid", self.args.auth)
             self.session.cookies.set("_zm_kms", self.args.auth)
 
     def _print(self, message, level=0):
