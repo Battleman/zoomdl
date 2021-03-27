@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """Define the main ZoomDL class and its methods."""
-import sys
 import os
-import requests
 import re
-from tqdm import tqdm
+import sys
+
 import demjson
+import requests
+from tqdm import tqdm
+
+from .utils import ZoomdlCookieJar
 
 
 class ZoomDL():
@@ -15,11 +18,18 @@ class ZoomDL():
     def __init__(self, args):
         """Init the class."""
         self.args = args
-        self.session = requests.session()
-        self.loglevel = self.args.log_level
+        self.loglevel = args.log_level
         self.page = None
-        self.metadata = {}
-        # self._set_cookies(self.args.browser)
+        self.url, self.domain, self.subdomain = "", "", ""
+        self.metadata = None
+        self.session = requests.session()
+
+        self.loglevel = self.args.log_level
+
+        if self.args.cookies:
+            cookiejar = ZoomdlCookieJar(self.args.cookies)
+            cookiejar.load()
+            self.session.cookies.update(cookiejar)
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
@@ -44,18 +54,6 @@ class ZoomDL():
         """
         if level < 5 and level >= self.loglevel:
             print(message)
-
-    # def _set_cookies(browser):
-    #     if browser is None:
-    #         pass
-    #     else:
-    #         if browser.lower == "firefox":
-    #             self.session.cookies = browser_cookie3.firefox()
-    #         elif browser.lower == "chrome":
-    #             self.session.cookies = browser_cookie3.chrome()
-    #         else:
-    #             raise ValueError(("Browser {} not understood; "
-    #                               "Use Firefox or Chrome").format(browser))
 
     def _change_page(self, url):
         """Change page, with side methods."""
@@ -95,6 +93,8 @@ class ZoomDL():
             if vid_url_match is None:
                 self._print("[ERROR] Video not found in page. "
                             "Is it login-protected? ", 4)
+                self._print(
+                    "Try to refresh the webpage, and export cookies again", 4)
                 return None
             meta["url"] = vid_url_match.group(1)
         return meta
@@ -149,9 +149,18 @@ class ZoomDL():
     def download(self, all_urls):
         """Exposed class to download a list of urls."""
         for url in all_urls:
-            domain = re.match(r"https?://([^.]*\.?)zoom.us", url).group(1)
+            self.url = url
+            try:
+                self.subdomain, self.domain = re.match(
+                    r"(?:https?://)?([^.]*\.?)(zoom[^.]*).us", self.url)[0]
+            except IndexError:
+                self._print("Unable to extract domain and subdomain "
+                            "from url {}, exitting".format(self.url), 4)
+                sys.exit(1)
             self.session.headers.update({
-                'referer': "https://{}zoom.us/".format(domain),  # set referer
+                # set referer
+                'referer': "https://{}{}.us/".format(self.subdomain,
+                                                     self.domain),
             })
             if self.args.user_agent is None:
                 if self.args.filename_add_date:
@@ -173,24 +182,7 @@ class ZoomDL():
             })
             self._change_page(url)
             if self.args.password is not None:
-                # that sht has a password
-                # first look for the meet_id
-                self._print("Using password '{}'".format(self.args.password))
-                meet_id_regex = re.compile("<input[^>]*")
-                for inp in meet_id_regex.findall(self.page.text):
-                    input_split = inp.split()
-                    if input_split[2] == 'id="meetId"':
-                        meet_id = input_split[3][7:-1]
-                        break
-
-                # create POST request
-                data = {"id": meet_id, "passwd": self.args.password,
-                        "action": "viewdetailpage"}
-                check_url = ("https://{}zoom.us/rec/validate_meet_passwd"
-                             .format(domain))
-                self.session.post(check_url, data=data)
-                self._change_page(url)  # get as if nothing
-
+                self.authenticate()
             self.metadata = self.get_page_meta()
             if self.metadata is None:
                 self._print("Unable to find metadata, aborting.", 4)
@@ -229,6 +221,36 @@ class ZoomDL():
                         .format(self.page.url))
             sys.exit(1)
 
+    def authenticate(self):
+        # that shit has a password
+        # first look for the meet_id
+        self._print("Using password '{}'".format(self.args.password))
+        meet_id_regex = re.compile("<input[^>]*")
+        input_tags = meet_id_regex.findall(self.page.text)
+        meet_id = None
+        for inp in input_tags:
+            input_split = inp.split()
+            if input_split[2] == 'id="metId"':
+                meet_id = input_split[3][7:-1]
+                break
+        if meet_id is None:
+            self._print("[CRITICAL]Unable to find meetId in the page",
+                        4)
+            if self.loglevel > 0:
+                self._print("Please re-run with option -v 0 "
+                            "and report it "
+                            "to http://github.com/battleman/zoomdl",
+                            4)
+            self._print("\n".join(input_tags))
+            sys.exit(1)
+        # create POST request
+        data = {"id": meet_id, "passwd": self.args.password,
+                "action": "viewdetailpage"}
+        check_url = ("https://{}{}.us/rec/validate_meet_passwd"
+                     .format(self.subdomain, self.domain))
+        self.session.post(check_url, data=data)
+        self._change_page(self.url)  # get as if nothing
+
 
 def confirm(message):
     """
@@ -252,7 +274,7 @@ def get_filepath(user_fname, file_fname, extension):
         basedir = os.getcwd()
         # remove illegal characters
         name = os.path.join(basedir, re.sub(
-            "[/\\\?*:\"|><]+", "_", file_fname))
+            r"[/\\\?*:\"|><]+", "_", file_fname))
 
     else:
         name = os.path.abspath(user_fname)
