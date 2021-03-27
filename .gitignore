@@ -4,3 +4,4 @@ build/
 dist/
 *.exe.spec
 .vscode
+quick_dl.py

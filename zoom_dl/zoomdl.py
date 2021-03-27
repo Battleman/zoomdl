@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """Define the main ZoomDL class and its methods."""
-import sys
 import os
-import requests
 import re
-from tqdm import tqdm
+import sys
+
 import demjson
-# import browser_cookie3
+import requests
+from tqdm import tqdm
+
+from .utils import ZoomdlCookieJar
 
 
 class ZoomDL():
@@ -16,9 +18,18 @@ class ZoomDL():
     def __init__(self, args):
         """Init the class."""
         self.args = args
+        self.loglevel = args.log_level
+        self.page = None
+        self.url, self.domain, self.subdomain = "", "", ""
+        self.metadata = None
         self.session = requests.session()
+
         self.loglevel = self.args.log_level
-        # self._set_cookies(self.args.browser)
+
+        if self.args.cookies:
+            cookiejar = ZoomdlCookieJar(self.args.cookies)
+            cookiejar.load()
+            self.session.cookies.update(cookiejar)
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
@@ -43,18 +54,6 @@ class ZoomDL():
         """
         if level < 5 and level >= self.loglevel:
             print(message)
-
-    # def _set_cookies(browser):
-    #     if browser is None:
-    #         pass
-    #     else:
-    #         if browser.lower == "firefox":
-    #             self.session.cookies = browser_cookie3.firefox()
-    #         elif browser.lower == "chrome":
-    #             self.session.cookies = browser_cookie3.chrome()
-    #         else:
-    #             raise ValueError(("Browser {} not understood; "
-    #                               "Use Firefox or Chrome").format(browser))
 
     def _change_page(self, url):
         """Change page, with side methods."""
@@ -94,6 +93,8 @@ class ZoomDL():
             if vid_url_match is None:
                 self._print("[ERROR] Video not found in page. "
                             "Is it login-protected? ", 4)
+                self._print(
+                    "Try to refresh the webpage, and export cookies again", 4)
                 return None
             meta["url"] = vid_url_match.group(1)
         return meta
@@ -111,36 +112,55 @@ class ZoomDL():
                     .format(name, extension), 0)
         name = name if clip is None else "{}-{}".format(name, clip)
         filepath = get_filepath(fname, name, extension)
-        if filepath is None:
-            self._print("Filepath is none, interrupting")
-            return
-        self._print("Full filepath is {}".format(filepath), 0)
+        filepath_tmp = filepath + ".part"
+        self._print("Full filepath is {}, temporary is {}".format(
+            filepath, filepath_tmp), 0)
         self._print("Downloading '{}'...".format(filepath.split("/")[-1]), 1)
-        vid = self.session.get(vid_url, stream=True)
-        if vid.status_code == 200:
-            with open(filepath, "wb") as f:
-                total_size = int(vid.headers.get('content-length'))
-                unit_int, unit_str = ((1024, "KiB") if total_size < 30*1024**2
-                                      else (1024**2, "MiB"))
-                for chunk in tqdm(vid.iter_content(chunk_size=unit_int),
-                                  total=total_size//unit_int + 1,
-                                  unit=unit_str, mininterval=0.2,
+        vid_header = self.session.head(vid_url)
+        total_size = int(vid_header.headers.get('content-length'))
+        # unit_int, unit_str = ((1024, "KiB") if total_size < 30*1024**2
+        #                       else (1024**2, "MiB"))
+        start_bytes = int(os.path.exists(filepath_tmp) and
+                          os.path.getsize(filepath_tmp))
+        if start_bytes > 0:
+            self._print("Incomplete file found ({:.2f}%), resuming..."
+                        .format(100*start_bytes/total_size), 1)
+        headers = {"Range": "bytes={}-".format(start_bytes)}
+        vid = self.session.get(vid_url, headers=headers, stream=True)
+        if vid.status_code in [200, 206] and total_size > 0:
+            with open(filepath_tmp, "ab") as f:
+                for chunk in tqdm(vid.iter_content(),
+                                  total=total_size,
+                                  unit_scale=True,
+                                  mininterval=0.2,
+                                  initial=start_bytes,
                                   dynamic_ncols=True):
                     if chunk:
                         f.write(chunk)
                         f.flush()
             self._print("Done!", 1)
+            os.rename(filepath_tmp, filepath)
         else:
             self._print("Woops, error downloading: '{}'".format(vid_url), 3)
-            self._print("Status code: {}".format(vid.status_code), 0)
+            self._print("Status code: {}, file size: {}".format(
+                vid.status_code, total_size), 0)
             sys.exit(1)
 
     def download(self, all_urls):
         """Exposed class to download a list of urls."""
         for url in all_urls:
-            domain = re.match(r"https?://([^.]*\.?)zoom.us", url).group(1)
+            self.url = url
+            try:
+                self.subdomain, self.domain = re.match(
+                    r"(?:https?://)?([^.]*\.?)(zoom[^.]*).us", self.url)[0]
+            except IndexError:
+                self._print("Unable to extract domain and subdomain "
+                            "from url {}, exitting".format(self.url), 4)
+                sys.exit(1)
             self.session.headers.update({
-                'referer': "https://{}zoom.us/".format(domain),  # set referer
+                # set referer
+                'referer': "https://{}{}.us/".format(self.subdomain,
+                                                     self.domain),
             })
             if self.args.user_agent is None:
                 if self.args.filename_add_date:
@@ -162,24 +182,7 @@ class ZoomDL():
             })
             self._change_page(url)
             if self.args.password is not None:
-                # that shit has a password
-                # first look for the meet_id
-                self._print("Using password '{}'".format(self.args.password))
-                meet_id_regex = re.compile("<input[^>]*")
-                for inp in meet_id_regex.findall(self.page.text):
-                    input_split = inp.split()
-                    if input_split[2] == 'id="meetId"':
-                        meet_id = input_split[3][7:-1]
-                        break
-
-                # create POST request
-                data = {"id": meet_id, "passwd": self.args.password,
-                        "action": "viewdetailpage"}
-                check_url = ("https://{}zoom.us/rec/validate_meet_passwd"
-                             .format(domain))
-                self.session.post(check_url, data=data)
-                self._change_page(url)  # get as if nothing
-
+                self.authenticate()
             self.metadata = self.get_page_meta()
             if self.metadata is None:
                 self._print("Unable to find metadata, aborting.", 4)
@@ -198,12 +201,12 @@ class ZoomDL():
                 for clip in range(current_clip, to_download+1):
                     self.download_vid(filename, clip)
                     url = self.page.url
-                    nextTime = str(self.metadata["nextClipStartTime"])
-                    currTime = str(self.metadata["clipStartTime"])
-                    if currTime in url:
-                        url = url.replace(currTime, nextTime)
+                    next_time = str(self.metadata["nextClipStartTime"])
+                    curr_time = str(self.metadata["clipStartTime"])
+                    if curr_time in url:
+                        url = url.replace(curr_time, next_time)
                     else:
-                        url += "&startTime={}".format(nextTime)
+                        url += "&startTime={}".format(next_time)
                     self._change_page(url)
 
     def check_captcha(self):
@@ -217,6 +220,36 @@ class ZoomDL():
             self._print("The page {} is captcha-protected. Unable to download"
                         .format(self.page.url))
             sys.exit(1)
+
+    def authenticate(self):
+        # that shit has a password
+        # first look for the meet_id
+        self._print("Using password '{}'".format(self.args.password))
+        meet_id_regex = re.compile("<input[^>]*")
+        input_tags = meet_id_regex.findall(self.page.text)
+        meet_id = None
+        for inp in input_tags:
+            input_split = inp.split()
+            if input_split[2] == 'id="metId"':
+                meet_id = input_split[3][7:-1]
+                break
+        if meet_id is None:
+            self._print("[CRITICAL]Unable to find meetId in the page",
+                        4)
+            if self.loglevel > 0:
+                self._print("Please re-run with option -v 0 "
+                            "and report it "
+                            "to http://github.com/battleman/zoomdl",
+                            4)
+            self._print("\n".join(input_tags))
+            sys.exit(1)
+        # create POST request
+        data = {"id": meet_id, "passwd": self.args.password,
+                "action": "viewdetailpage"}
+        check_url = ("https://{}{}.us/rec/validate_meet_passwd"
+                     .format(self.subdomain, self.domain))
+        self.session.post(check_url, data=data)
+        self._change_page(self.url)  # get as if nothing
 
 
 def confirm(message):
@@ -240,7 +273,8 @@ def get_filepath(user_fname, file_fname, extension):
     if user_fname is None:
         basedir = os.getcwd()
         # remove illegal characters
-        name = os.path.join(basedir, re.sub("[/\\\?*:\"|><]+", "_", file_fname))
+        name = os.path.join(basedir, re.sub(
+            r"[/\\\?*:\"|><]+", "_", file_fname))
 
     else:
         name = os.path.abspath(user_fname)
@@ -249,5 +283,5 @@ def get_filepath(user_fname, file_fname, extension):
     if os.path.isfile(filepath):
         if not confirm("File {} already exists. This will erase it"
                        .format(filepath)):
-            return None
+            sys.exit(0)
     return filepath
