@@ -151,8 +151,7 @@ class ZoomDL():
         for url in all_urls:
             self.url = url
             try:
-                self.subdomain, self.domain = re.match(
-                    r"(?:https?://)?([^.]*\.?)(zoom[^.]*).us", self.url)[0]
+                self.subdomain, self.domain = re.findall(r"(?:https?://)?([^.]*\.?)(zoom[^.]*).us", self.url)[0]
             except IndexError:
                 self._print("Unable to extract domain and subdomain "
                             "from url {}, exitting".format(self.url), 4)
