@@ -229,7 +229,8 @@ class ZoomDL():
         meet_id = None
         for inp in input_tags:
             input_split = inp.split()
-            if input_split[2] == 'id="metId"':
+            print(input_split)
+            if input_split[2] == 'id="meetId"':
                 meet_id = input_split[3][7:-1]
                 break
         if meet_id is None:
