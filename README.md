@@ -54,6 +54,19 @@ If there is a domain in your url, make sure to include it, it's crucial.
   * \> 1 means: download until you reach this number of clip (or the end)
 * `-d/--filename-add-date` will append the date of the recording to the filename. **without effect if `-f` is specified**
 * `--user-agent` (no shorthand notation): lets you specify a custom User-Agent (only do that if you know what you're doing and why)
+* `--cookies` (no shorthand notation): specify the path to a cookie jar file. 
+
+### Cookies / SSO / Captcha / Login
+Some videos are protected with more than a password. You require an SSO, or to solve a captcha. The `cookies` option allows you to perform all the steps in a browser, and then use the cookies to access the video. This functionality is similar to Youtube-dl's same option.
+
+**Howto:**
+1. (Only once, the first time) In your favourite browser (works for Firefox-based or Chrome-based), install a cookies-export extension. Cookies must some in the _Netscape format_. There are multiple extensions out there, chose your favourite. For example [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/), [Other Firefox](https://addons.mozilla.org/en-US/firefox/addon/export-cookies-txt/), [Chrome](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid), [Other Chrome](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
+2. With the same browser, visit the video you want to download; pass all required verifications (SSO, captcha, login,...), until you are able to view the video
+3. Using the aformentioned extension, export your cookies. You need the cookies for the domain (`.zoom.us`), so export at least "cookies for this site", or "cookies for this domain", or whatever it's called.
+4. Save generated file somewhere (for example, `Downloads/cookies.txt`)
+5. When calling ZoomDL, use the option `--cookies path/to/the/cookies.txt`
+
+If you want to download several videos who use the same login (like SSO), you only need to export the cookies once
 
 ### About syntax
 I see a lot of people who don't understand what the above means. Here is a short explanation:
