@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
 """Define the main ZoomDL class and its methods."""
-import sys
 import os
-import requests
 import re
-from tqdm import tqdm
+import sys
+
 import demjson
-# import browser_cookie3
+import requests
+from tqdm import tqdm
+
+from .utils import ZoomdlCookieJar
 
 
 class ZoomDL():
@@ -17,16 +19,16 @@ class ZoomDL():
         """Init the class."""
         self.args = args
         self.loglevel = args.log_level
-
+        self.page = None
+        self.metadata = None
         self.session = requests.session()
 
         self.loglevel = self.args.log_level
-        # setting 3 cookies at once... #FIXME
-        if self.args.auth:
-            self.session.cookies.set("_zm_ssid", self.args.auth)
-            self.session.cookies.set("_zm_kms", self.args.auth)
-        if args.recordmeet: self.session.cookies.set("_zm_web_recordmeet", args.recordmeet)
-        if args.kms: self.session.cookies.set("_zm_kms", args.kms)
+
+        if self.args.cookies:
+            cookiejar = ZoomdlCookieJar(self.args.cookies)
+            cookiejar.load()
+            self.session.cookies.update(cookiejar)
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
@@ -248,7 +250,8 @@ def get_filepath(user_fname, file_fname, extension):
     if user_fname is None:
         basedir = os.getcwd()
         # remove illegal characters
-        name = os.path.join(basedir, re.sub("[/\\\?*:\"|><]+", "_", file_fname))
+        name = os.path.join(basedir, re.sub(
+            r"[/\\\?*:\"|><]+", "_", file_fname))
 
     else:
         name = os.path.abspath(user_fname)
