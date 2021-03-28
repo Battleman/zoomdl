@@ -1,9 +1,10 @@
+version 2021.03.28
+- Added support for zoomgov urls (more generic calls). Fix #44
+
 version 2021.03.27
 - Cleaning the whole cookies problem. Align with Youtube-DL and use cookies.txt in Netscape format
     Should fix #41, #20, #43
 - Merged resume-dl: support for resuming downloads. Fix #37
-- Added support for zoomgov urls (more generic calls). Fix #44
-
 
 version 2021.02.15_beta
 - 2 PR about cookies and downloading password/SSO protected recordings (#38, #40). Should fix #20.
