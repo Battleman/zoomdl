@@ -92,9 +92,9 @@ I see a lot of people who don't understand what the above means. Here is a short
 
 For example, those are all valid commands (ofc by replacing the URLs):
 ```
-zoomdl -u "https://my_url" -f "recording_from_monday"
-zoomdl --url "https://my_url"
-zoomdl -p '$28fn2f8' --filename-add-date --filename "recording_from_tuesday" -u "https://my_url" --user-agent "Windows 10 wonderful User-Agent -v 3"
+zoomdl -u 'https://my_url' -f "recording_from_monday"
+zoomdl --url 'https://my_url'
+zoomdl -p '$28fn2f8' --filename-add-date --filename "recording_from_tuesday" -u 'https://my_url' --user-agent "Windows 10 wonderful User-Agent" -v 3
 ```
 ### About quotes [IMPORTANT]
 The quotes are not mandatory, but if your filename/url/password/... contains reserved characters (`\`, `&`, `$`,`%`...), quotes are the way to go.
