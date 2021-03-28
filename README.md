@@ -10,6 +10,22 @@ More and more, I face the challenge of testing. I code on my own Debian machine,
 
 If you are anyhow interested in helping (there are various ways to!), go to the dedicated issue (#32), and comment there. The concept is still very young for me, sorry that.
 
+- [ZoomDL](#zoomdl)
+  - [Support](#support)
+  - [ANNOUNCEMENT LOOKING FOR TESTERS](#announcement-looking-for-testers)
+  - [Goal](#goal)
+  - [Availability](#availability)
+  - [Installation](#installation)
+    - [Linux/OSX](#linuxosx)
+    - [Windows](#windows)
+  - [Validity of urls](#validity-of-urls)
+  - [Usage](#usage)
+    - [Cookies / SSO / Captcha / Login](#cookies--sso--captcha--login)
+    - [About syntax](#about-syntax)
+    - [About quotes [IMPORTANT]](#about-quotes-important)
+  - [Requirements](#requirements)
+  - [Acknowledgements](#acknowledgements)
+
 ## Goal
 Conferences, meetings and presentations held on Zoom are often recorded and stored in the cloud, for a finite amount of time. The host can chose to make them available to download, but it is not mandatory.
 
