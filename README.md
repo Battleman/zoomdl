@@ -18,11 +18,14 @@ If you are anyhow interested in helping (there are various ways to!), go to the 
   - [Installation](#installation)
     - [Linux/OSX](#linuxosx)
     - [Windows](#windows)
-  - [Validity of urls](#validity-of-urls)
   - [Usage](#usage)
     - [Cookies / SSO / Captcha / Login](#cookies--sso--captcha--login)
     - [About syntax](#about-syntax)
     - [About quotes [IMPORTANT]](#about-quotes-important)
+    - [Validity of urls](#validity-of-urls)
+  - [Building from sources](#building-from-sources)
+    - [Linux](#linux)
+    - [Windows](#windows-1)
   - [Requirements](#requirements)
   - [Acknowledgements](#acknowledgements)
 
@@ -52,11 +55,6 @@ Once you have done that, you can use your terminal and type the commands normall
 ### Windows
 **This is still in beta**
 Grab the dedicated binary `zoomdl.exe`, and launch it using your command line. If you don't know how, visit [this wikihow](https://www.wikihow.com/Run-an-EXE-File-From-Command-Prompt). You may encounter warning from your anti-virus, you can ignore them (I'm not evil, pinky-promise). You probably don't need a Python3 installation, it *should* be contained within the executable.
-
-## Validity of urls
-There are 2 type of valid urls.
-* Those starting with _https://zoom.us/rec/play/..._
-* Or, with a domain, _https://X.zoom.us/rec/play/..._ where _X_ is a domain, something like _us02web_, _epfl_,... or similar.
 
 If there is a domain in your url, make sure to include it, it's crucial.
 ## Usage
@@ -105,6 +103,20 @@ Under Linux/OSX, it is strongly advised to use *single quotes*, because `"4$g3.2
 
 Under Windows, I *think* you must use double quotes everywhere. Don't quote me on that.
 
+### Validity of urls
+There are 3 type of valid urls.
+* Those starting with _https://zoom.us/rec/play/..._
+* Or, with a domain, _https://X.zoom.us/rec/play/..._ where _X_ is a domain, something like _us02web_, _epfl_,... or similar.
+* Finally, governemantal urls: _https://X.zoomgov.com/rec/play/..._ (same as above; X may be empty)
+
+## Building from sources
+If you wish to build from sources, here is a quick howto. First, you need to clone the repository and enter it with a terminal. Then:
+### Linux
+Run the command `./devscript.sh compile`. It basically installs all the dependencies with pip in a temporary directory, then zips it.
+
+### Windows
+* Install [pyinstaller](https://www.pyinstaller.org/) (usually `pip install -U pyinstaller`) 
+* Run the command `wincompile.bat`. It calls just calls `pyinstaller` and cleans the generated folders and files, leaving only the exe file. 
 
 ## Requirements
 All dependencies are bundled within the executable. This allows to make a standalone execution without need for external libraries.
