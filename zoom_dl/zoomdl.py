@@ -151,15 +151,16 @@ class ZoomDL():
         for url in all_urls:
             self.url = url
             try:
-                self.subdomain, self.domain = re.findall(r"(?:https?://)?([^.]*\.?)(zoom[^.]*).us", self.url)[0]
+                regex = r"(?:https?:\/\/)?([^.]*\.?)(zoom[^.]*\.(?:us|com))"
+                self.subdomain, self.domain = re.findall(regex, self.url)[0]
             except IndexError:
                 self._print("Unable to extract domain and subdomain "
                             "from url {}, exitting".format(self.url), 4)
                 sys.exit(1)
             self.session.headers.update({
                 # set referer
-                'referer': "https://{}{}.us/".format(self.subdomain,
-                                                     self.domain),
+                'referer': "https://{}{}/".format(self.subdomain,
+                                                  self.domain),
             })
             if self.args.user_agent is None:
                 if self.args.filename_add_date:
@@ -246,7 +247,7 @@ class ZoomDL():
         # create POST request
         data = {"id": meet_id, "passwd": self.args.password,
                 "action": "viewdetailpage"}
-        check_url = ("https://{}{}.us/rec/validate_meet_passwd"
+        check_url = ("https://{}{}/rec/validate_meet_passwd"
                      .format(self.subdomain, self.domain))
         self.session.post(check_url, data=data)
         self._change_page(self.url)  # get as if nothing
