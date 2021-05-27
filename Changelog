@@ -1,3 +1,6 @@
+version 2021.05.27
+- Fixed slow download speed (#49)
+
 version 2021.03.28
 - Added support for zoomgov urls (more generic calls). Fix #44
 

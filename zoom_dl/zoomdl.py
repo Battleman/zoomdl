@@ -128,15 +128,16 @@ class ZoomDL():
         headers = {"Range": "bytes={}-".format(start_bytes)}
         vid = self.session.get(vid_url, headers=headers, stream=True)
         if vid.status_code in [200, 206] and total_size > 0:
-            with open(filepath_tmp, "ab") as f:
-                for chunk in tqdm(vid.iter_content(),
-                                  total=total_size,
-                                  unit_scale=True,
-                                  mininterval=0.2,
-                                  initial=start_bytes,
-                                  dynamic_ncols=True):
-                    if chunk:
-                        f.write(chunk)
+            with open(filepath_tmp, "ab") as f, tqdm(total=total_size,
+                                                     unit='B',
+                                                     initial=start_bytes,
+                                                     dynamic_ncols=True,
+                                                     unit_scale=True,
+                                                     unit_divisor=1024) as pbar:
+                for data in vid.iter_content(1024):
+                    if data:
+                        pbar.update(len(data))
+                        f.write(data)
                         f.flush()
             self._print("Done!", 1)
             os.rename(filepath_tmp, filepath)
@@ -230,7 +231,6 @@ class ZoomDL():
         meet_id = None
         for inp in input_tags:
             input_split = inp.split()
-            print(input_split)
             if input_split[2] == 'id="meetId"':
                 meet_id = input_split[3][7:-1]
                 break
@@ -242,7 +242,7 @@ class ZoomDL():
                             "and report it "
                             "to http://github.com/battleman/zoomdl",
                             4)
-            self._print("\n".join(input_tags))
+            self._print("\n".join(input_tags), 0)
             sys.exit(1)
         # create POST request
         data = {"id": meet_id, "passwd": self.args.password,
@@ -285,4 +285,5 @@ def get_filepath(user_fname, file_fname, extension):
         if not confirm("File {} already exists. This will erase it"
                        .format(filepath)):
             sys.exit(0)
+        os.remove(filepath)
     return filepath
