@@ -145,8 +145,7 @@ def parseOpts():
                         type=int,
                         default=1)
 
-    PARSER.add_argument("--cookies", help="Directly pass cookie values",
-                        metavar="cookie1name:cookie1value,\
-                              cookie2name:cookie2value,...",
+    PARSER.add_argument("--cookies", help="Path to a cookies file in Netscape Format",
+                        metavar=("path/to/the/cookies.txt"),
                         required=False)
     return PARSER.parse_args()
