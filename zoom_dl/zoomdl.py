@@ -4,7 +4,7 @@
 import os
 import re
 import sys
-
+from typing import Optional
 import demjson
 import requests
 from tqdm import tqdm
@@ -59,7 +59,7 @@ class ZoomDL():
         """Change page, with side methods."""
         self._print("Changing page to {}".format(url), 0)
         self.page = self.session.get(url)
-        #self.check_captcha()
+        # self.check_captcha()
 
     def get_page_meta(self) -> dict:
         """Retrieve metadata from the current self.page.
@@ -107,7 +107,8 @@ class ZoomDL():
 
     def download_vid(self, fname, clip=None):
         """Download one recording, and save it at fname."""
-        self._print("Downloading filename {}, clip={}".format(fname, str(clip)), 0)
+        self._print("Downloading filename {}, clip={}".format(
+            fname, str(clip)), 0)
         all_urls = {self.metadata.get("viewMp4Url"),
                     self.metadata.get("url"),
                     self.metadata.get("shareMp4Url")}
@@ -126,7 +127,8 @@ class ZoomDL():
                     self.metadata.get("r_meeting_topic")).replace(" ", "_")
             if (self.args.filename_add_date and
                     self.metadata.get("r_meeting_start_time")):
-                name = name + "-" + self.metadata.get("r_meeting_start_time").replace(" ", "_")
+                name = name + "-" + \
+                    self.metadata.get("r_meeting_start_time").replace(" ", "_")
             self._print("Found name is {}, extension is {}"
                         .format(name, extension), 0)
             if len(all_urls) > 1:
@@ -210,7 +212,7 @@ class ZoomDL():
             if self.metadata is None:
                 self._print("Unable to find metadata, aborting.", 4)
                 return None
-            
+
             # look for clips
             total_clips = int(self.metadata["totalClips"])
             current_clip = int(self.metadata["currentClip"])
@@ -279,7 +281,7 @@ class ZoomDL():
         self._change_page(self.url)  # get as if nothing
 
 
-def confirm(message):
+def confirm(message: str):
     """
     Ask user to enter Y or N (case-insensitive).
 
@@ -294,14 +296,14 @@ def confirm(message):
     return answer == "y"
 
 
-def get_filepath(user_fname:str, file_fname:str, extension:str, clip=None):
+def get_filepath(user_fname: Optional[str], file_fname: str, extension: str, clip=None):
     """Create an filepath."""
 
     if user_fname is None:
         basedir = os.getcwd()
         # remove illegal characters
-        name = os.path.join(basedir, re.sub(
-            r"[/\\\?*:\"|><]+", "_", file_fname))
+        name = os.path.join(basedir,
+                            re.sub(r"[/\\\?*:\"|><]+", "_", file_fname))
 
     else:
         name = os.path.abspath(user_fname)
