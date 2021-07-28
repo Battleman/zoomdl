@@ -1,4 +1,7 @@
 # ZoomDL
+| **Service** | **master**                                                                                                    | **tests**                                                                                                                  | **Beta**                                                                                                                  |
+| --- | --- | --- | --- |
+| Travis      | N/A (Soon...)| [![Build Status](https://app.travis-ci.com/Battleman/zoomdl.svg?branch=tests)](https://app.travis-ci.com/Battleman/zoomdl) | N/A (Soon...)|
 
 ## Support
 Like this project? Consider supporting me, for more awesome updates
