@@ -1,3 +1,9 @@
+version 2021.07.26
+- Fix IndexError on empty string (#60, #58)
+- Fix duplicate download on clips (#59)
+- Removed captcha check (because non-existent to begin with)
+- Fix some non-discovered bugs (with options -d and -f notably).
+
 version 2021.06.21
 - Allow for multiple screens download (#56)
 

@@ -59,10 +59,16 @@ class ZoomDL():
         """Change page, with side methods."""
         self._print("Changing page to {}".format(url), 0)
         self.page = self.session.get(url)
-        self.check_captcha()
+        #self.check_captcha()
 
-    def get_page_meta(self):
-        """Get metadata by trying multiple ways."""
+    def get_page_meta(self) -> dict:
+        """Retrieve metadata from the current self.page.
+
+
+
+        Returns:
+            dict: dictionary of all relevant metadata
+        """
         # default case
         text = self.page.text
         meta = dict(re.findall(r'type="hidden" id="([^"]*)" value="([^"]*)"',
@@ -101,29 +107,31 @@ class ZoomDL():
 
     def download_vid(self, fname, clip=None):
         """Download one recording, and save it at fname."""
+        self._print("Downloading filename {}, clip={}".format(fname, str(clip)), 0)
         all_urls = {self.metadata.get("viewMp4Url"),
                     self.metadata.get("url"),
                     self.metadata.get("shareMp4Url")}
-        try:
-            all_urls.remove(None)
-        except KeyError:
-            pass
+        for ign in ["", None]:
+            try:
+                all_urls.remove(ign)
+            except KeyError:
+                pass
         if len(all_urls) > 1:
             self._print("Found {} screens, downloading all of them".format(len(all_urls)),
                         1)
+            self._print(all_urls, 0)
         for vid_num, vid_url in enumerate(all_urls):
             extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
             name = (self.metadata.get("topic") or
                     self.metadata.get("r_meeting_topic")).replace(" ", "_")
             if (self.args.filename_add_date and
                     self.metadata.get("r_meeting_start_time")):
-                name = name + "-" + self.metadata.get("r_meeting_start_time")
+                name = name + "-" + self.metadata.get("r_meeting_start_time").replace(" ", "_")
             self._print("Found name is {}, extension is {}"
                         .format(name, extension), 0)
-            name = name if clip is None else "{}-clip{}".format(name, clip)
             if len(all_urls) > 1:
-                name += f"screen{vid_num}"
-            filepath = get_filepath(fname, name, extension)
+                name += f"_screen{vid_num}"
+            filepath = get_filepath(fname, name, extension, clip)
             filepath_tmp = filepath + ".part"
             self._print("Full filepath is {}, temporary is {}".format(
                 filepath, filepath_tmp), 0)
@@ -202,8 +210,10 @@ class ZoomDL():
             if self.metadata is None:
                 self._print("Unable to find metadata, aborting.", 4)
                 return None
-            total_clips = self.metadata["totalClips"]
-            current_clip = self.metadata["currentClip"]
+            
+            # look for clips
+            total_clips = int(self.metadata["totalClips"])
+            current_clip = int(self.metadata["currentClip"])
             count_clips = self.args.count_clips
             filename = self.args.filename
             if count_clips == 1:  # only download this
@@ -217,12 +227,14 @@ class ZoomDL():
                     self.download_vid(filename, clip)
                     url = self.page.url
                     next_time = str(self.metadata["nextClipStartTime"])
-                    curr_time = str(self.metadata["clipStartTime"])
-                    if curr_time in url:
-                        url = url.replace(curr_time, next_time)
-                    else:
-                        url += "&startTime={}".format(next_time)
-                    self._change_page(url)
+                    if next_time != "-1":
+                        if "&startTime" not in url:
+                            url += "&startTime={}".format(next_time)
+                        else:
+                            curr_time = re.findall(r"startTime=(\d+)", url)[0]
+                            url = url.replace(curr_time, next_time)
+                        self._change_page(url)
+                        self.metadata = self.get_page_meta()
 
     def check_captcha(self):
         """Check whether or not a page is protected by CAPTCHA.
@@ -282,7 +294,7 @@ def confirm(message):
     return answer == "y"
 
 
-def get_filepath(user_fname, file_fname, extension):
+def get_filepath(user_fname:str, file_fname:str, extension:str, clip=None):
     """Create an filepath."""
 
     if user_fname is None:
@@ -293,6 +305,8 @@ def get_filepath(user_fname, file_fname, extension):
 
     else:
         name = os.path.abspath(user_fname)
+    if clip is not None:
+        name += "_clip{}".format(clip)
     filepath = "{}.{}".format(name, extension)
     # check file doesn't already exist
     if os.path.isfile(filepath):
