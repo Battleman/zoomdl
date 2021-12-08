@@ -8,6 +8,7 @@ import sys
 import demjson
 import requests
 from tqdm import tqdm
+import datetime
 
 from .utils import ZoomdlCookieJar
 
@@ -111,7 +112,7 @@ class ZoomDL():
         all_urls = {
             "camera": self.metadata.get("viewMp4Url"),
             "screen": self.metadata.get("shareMp4Url"),
-            # the link below is valid only if an invalid UA is passed
+            # the link below is rarely valid (only when both the two links above are invalid)
             "unknown": self.metadata.get("url"),
         }
         for key, url in all_urls.copy().items():
@@ -125,9 +126,9 @@ class ZoomDL():
             extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
             name = (self.metadata.get("topic") or
                     self.metadata.get("r_meeting_topic")).replace(" ", "_")
-            if (self.args.filename_add_date and
-                    self.metadata.get("r_meeting_start_time")):
-                name = name + "-" + self.metadata.get("r_meeting_start_time").replace(" ", "_")
+            if self.args.filename_add_date:
+                recording_start_time = datetime.datetime.fromtimestamp(self.metadata["fileStartTime"] / 1000)
+                name = name + "_" + recording_start_time.strftime("%Y-%m-%d")
             self._print("Found name is {}, extension is {}"
                         .format(name, extension), 0)
             vid_name_appendix = f"_{vid_name}" if len(all_urls) > 1 else ""
@@ -186,19 +187,14 @@ class ZoomDL():
                                                   self.domain),
             })
             if self.args.user_agent is None:
-                if self.args.filename_add_date:
-                    self._print("Forcing custom UA to have the date")
-                    # if date is required, need invalid UA
-                    # 'invalid' User-Agent
-                    ua = "ZoomDL http://github.com/battleman/zoomdl"
-                else:
-                    self._print("Using standard Windows UA")
-                    # somehow standard User-Agent
-                    ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                          "AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/74.0.3729.169 Safari/537.36")
+                self._print("Using standard Windows UA", 0)
+                # somehow standard User-Agent
+                ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/74.0.3729.169 Safari/537.36")
             else:
                 ua = self.args.user_agent
+                self._print("Using custom UA: " + ua, 0)
 
             self.session.headers.update({
                 "User-Agent": ua
