@@ -105,22 +105,23 @@ class ZoomDL():
             meta["url"] = vid_url_match.group(1)
         return meta
 
-    def download_vid(self, fname, clip=None):
+    def download_vid(self, fname, clip:int=None):
         """Download one recording, and save it at fname."""
         self._print("Downloading filename {}, clip={}".format(fname, str(clip)), 0)
-        all_urls = {self.metadata.get("viewMp4Url"),
-                    self.metadata.get("url"),
-                    self.metadata.get("shareMp4Url")}
-        for ign in ["", None]:
-            try:
-                all_urls.remove(ign)
-            except KeyError:
-                pass
+        all_urls = {
+            "camera": self.metadata.get("viewMp4Url"),
+            "screen": self.metadata.get("shareMp4Url"),
+            # the link below is valid only if an invalid UA is passed
+            "unknown": self.metadata.get("url"),
+        }
+        for key, url in all_urls.copy().items():
+            if url is None or url == "":
+                all_urls.pop(key)
         if len(all_urls) > 1:
             self._print("Found {} screens, downloading all of them".format(len(all_urls)),
                         1)
             self._print(all_urls, 0)
-        for vid_num, vid_url in enumerate(all_urls):
+        for vid_name, vid_url in all_urls.items():
             extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
             name = (self.metadata.get("topic") or
                     self.metadata.get("r_meeting_topic")).replace(" ", "_")
@@ -129,9 +130,8 @@ class ZoomDL():
                 name = name + "-" + self.metadata.get("r_meeting_start_time").replace(" ", "_")
             self._print("Found name is {}, extension is {}"
                         .format(name, extension), 0)
-            if len(all_urls) > 1:
-                name += f"_screen{vid_num}"
-            filepath = get_filepath(fname, name, extension, clip)
+            vid_name_appendix = f"_{vid_name}" if len(all_urls) > 1 else ""
+            filepath = get_filepath(fname, name, extension, clip, vid_name_appendix)
             filepath_tmp = filepath + ".part"
             self._print("Full filepath is {}, temporary is {}".format(
                 filepath, filepath_tmp), 0)
@@ -210,7 +210,7 @@ class ZoomDL():
             if self.metadata is None:
                 self._print("Unable to find metadata, aborting.", 4)
                 return None
-            
+
             # look for clips
             total_clips = int(self.metadata["totalClips"])
             current_clip = int(self.metadata["currentClip"])
@@ -294,7 +294,7 @@ def confirm(message):
     return answer == "y"
 
 
-def get_filepath(user_fname:str, file_fname:str, extension:str, clip=None):
+def get_filepath(user_fname:str, file_fname:str, extension:str, clip:int=None, appendix:str=""):
     """Create an filepath."""
 
     if user_fname is None:
@@ -307,6 +307,7 @@ def get_filepath(user_fname:str, file_fname:str, extension:str, clip=None):
         name = os.path.abspath(user_fname)
     if clip is not None:
         name += "_clip{}".format(clip)
+    name += appendix
     filepath = "{}.{}".format(name, extension)
     # check file doesn't already exist
     if os.path.isfile(filepath):
