@@ -110,7 +110,7 @@ class ZoomDL():
                     chats.append(message)
                 except demjson.JSONDecodeError:
                     self._print("[WARNING] Error with the meta parsing. This "
-                                "should not be critical. Please contact a dev. " + matched_json, 2)
+                                "should not be critical. Please contact a dev.", 2)
         else:
             self._print("Unable to extract chatList from page", 0)
         meta["chatList"] = chats
