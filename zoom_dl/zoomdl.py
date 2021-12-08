@@ -9,6 +9,7 @@ import demjson
 import requests
 from tqdm import tqdm
 import datetime
+import json
 
 from .utils import ZoomdlCookieJar
 
@@ -31,6 +32,18 @@ class ZoomDL():
             cookiejar = ZoomdlCookieJar(self.args.cookies)
             cookiejar.load()
             self.session.cookies.update(cookiejar)
+
+    @property
+    def recording_name(self):
+        """
+        Return name of the current recording.
+        """
+        name = (self.metadata.get("topic") or
+                self.metadata.get("r_meeting_topic")).replace(" ", "_")
+        if self.args.filename_add_date:
+            recording_start_time = datetime.datetime.fromtimestamp(self.metadata["fileStartTime"] / 1000)
+            name = name + "_" + recording_start_time.strftime("%Y-%m-%d")
+        return name
 
     def _print(self, message, level=0):
         """Print to console, if level is sufficient.
@@ -65,8 +78,6 @@ class ZoomDL():
     def get_page_meta(self) -> dict:
         """Retrieve metadata from the current self.page.
 
-
-
         Returns:
             dict: dictionary of all relevant metadata
         """
@@ -87,6 +98,39 @@ class ZoomDL():
         else:
             self._print("Advanced meta failed", 2)
             # self._print(self.page.text)
+
+        # look for injected chat messages
+        chats = []
+        chat_match = re.findall("window.__data__.chatList.push\(\s*?({(?:.*\n)*?})\s*?\)",
+                                self.page.text)
+        if len(chat_match) > 0:
+            for matched_json in chat_match:
+                try:
+                    message = demjson.decode(matched_json)
+                    chats.append(message)
+                except demjson.JSONDecodeError:
+                    self._print("[WARNING] Error with the meta parsing. This "
+                                "should not be critical. Please contact a dev. " + matched_json, 2)
+        else:
+            self._print("Unable to extract chatList from page", 0)
+        meta["chatList"] = chats
+
+        # look for injected transcripts
+        transcripts = []
+        transcript_match = re.findall("window.__data__.transcriptList.push\(\s*?({(?:.*\n)*?})\s*?\)",
+                                      self.page.text)
+        if len(transcript_match) > 0:
+            for matched_json in transcript_match:
+                try:
+                    message = demjson.decode(matched_json)
+                    transcripts.append(message)
+                except demjson.JSONDecodeError:
+                    self._print("[WARNING] Error with the meta parsing. This "
+                                "should not be critical. Please contact a dev.", 2)
+        else:
+            self._print("Unable to extract transcriptList from page", 0)
+        meta["transcriptList"] = transcripts
+
         self._print("Metas are {}".format(meta), 0)
         if len(meta) == 0:
             self._print("Unable to gather metadata in page")
@@ -106,8 +150,18 @@ class ZoomDL():
             meta["url"] = vid_url_match.group(1)
         return meta
 
+    def dump_page_meta(self, fname, clip:int=None):
+        """
+        Dump page meta in json format to fname.
+        """
+        self._print("Dumping page meta...", 0)
+        filepath = get_filepath(fname, self.recording_name, "json", clip)
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(self.metadata, f)
+        self._print(f"Dumped page meta to '{filepath}'.", 1)
+
     def download_vid(self, fname, clip:int=None):
-        """Download one recording, and save it at fname."""
+        """Download one recording (including videos, chat, and transcripts), and save it at fname."""
         self._print("Downloading filename {}, clip={}".format(fname, str(clip)), 0)
         all_urls = {
             "camera": self.metadata.get("viewMp4Url"),
@@ -122,17 +176,13 @@ class ZoomDL():
             self._print("Found {} screens, downloading all of them".format(len(all_urls)),
                         1)
             self._print(all_urls, 0)
+
         for vid_name, vid_url in all_urls.items():
             extension = vid_url.split("?")[0].split("/")[-1].split(".")[1]
-            name = (self.metadata.get("topic") or
-                    self.metadata.get("r_meeting_topic")).replace(" ", "_")
-            if self.args.filename_add_date:
-                recording_start_time = datetime.datetime.fromtimestamp(self.metadata["fileStartTime"] / 1000)
-                name = name + "_" + recording_start_time.strftime("%Y-%m-%d")
-            self._print("Found name is {}, extension is {}"
-                        .format(name, extension), 0)
+            self._print("Found name is {}, vid_name is {}, extension is {}"
+                        .format(self.recording_name, vid_name, extension), 0)
             vid_name_appendix = f"_{vid_name}" if len(all_urls) > 1 else ""
-            filepath = get_filepath(fname, name, extension, clip, vid_name_appendix)
+            filepath = get_filepath(fname, self.recording_name, extension, clip, vid_name_appendix)
             filepath_tmp = filepath + ".part"
             self._print("Full filepath is {}, temporary is {}".format(
                 filepath, filepath_tmp), 0)
@@ -169,6 +219,64 @@ class ZoomDL():
                 self._print("Status code: {}, file size: {}".format(
                     vid.status_code, total_size), 0)
                 sys.exit(1)
+
+        # save chat
+        if self.args.save_chat is not None:
+            messages = self.metadata["chatList"]
+            if len(messages) == 0:
+                self._print(f"Unable to retrieve chat message from url {self.url} (is there no chat message?)", 2)
+            else:
+                # Convert time string to proper format
+                for message in messages:
+                    message["time"] = shift_time_delta(message["time"])
+
+                if self.args.save_chat == "txt":
+                    filepath = get_filepath(fname, self.recording_name, "txt", clip, ".chat")
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        for idx, message in enumerate(messages):
+                            f.write("[{}] @ {} :\n".format(
+                                message["username"], message["time"]))
+                            f.write(message["content"] + "\n")
+                            if idx + 1 < len(messages):
+                                f.write("\n")
+                elif self.args.save_chat == "srt":
+                    filepath = get_filepath(fname, self.recording_name, "srt", clip, ".chat")
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        for idx, message in enumerate(messages):
+                            end_time = shift_time_delta(message["time"], self.args.chat_subtitle_dur)
+                            f.write(str(idx+1) + "\n")
+                            f.write("{},000 --> {},000\n".format(message["time"], end_time))
+                            f.write(message["username"] + ": " + message["content"] + "\n")
+                            if idx + 1 < len(messages):
+                                f.write("\n")
+                self._print(f"Successfully saved chat into '{filepath}'!", 1)
+
+        # save transcripts
+        if self.args.save_transcript is not None:
+            transcripts = self.metadata["transcriptList"]
+            if len(transcripts) == 0:
+                self._print(f"Unable to retrieve transcript from url {self.url} (is transcript not enabled in this video?)", 2)
+            else:
+                if self.args.save_transcript == "txt":
+                    filepath = get_filepath(fname, self.recording_name, "txt", clip, ".transcript")
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        for idx, transcript in enumerate(transcripts):
+                            f.write("[{}] @ {} --> {} :\n".format(
+                                transcript["username"], transcript["ts"], transcript["endTs"]))
+                            f.write(transcript["text"] + "\n")
+                            if idx + 1 < len(transcripts):
+                                f.write("\n")
+                elif self.args.save_transcript == "srt":
+                    filepath = get_filepath(fname, self.recording_name, "srt", clip, ".transcript")
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        for idx, transcript in enumerate(transcripts):
+                            f.write(str(idx+1) + "\n")
+                            f.write("{} --> {}\n".format(
+                                transcript["ts"].replace(".",","), transcript["endTs"].replace(".",",")))
+                            f.write(transcript["username"] + ": " + transcript["text"] + "\n")
+                            if idx + 1 < len(transcripts):
+                                f.write("\n")
+                self._print(f"Successfully saved transcripts into '{filepath}'!", 1)
 
     def download(self, all_urls):
         """Exposed class to download a list of urls."""
@@ -214,6 +322,8 @@ class ZoomDL():
             filename = self.args.filename
             if count_clips == 1:  # only download this
                 self.download_vid(filename)
+                if self.args.dump_pagemeta:
+                    self.dump_page_meta(filename)
             else:  # download multiple
                 if count_clips == 0:
                     to_download = total_clips  # download this and all nexts
@@ -221,6 +331,8 @@ class ZoomDL():
                     to_download = min(count_clips, total_clips)
                 for clip in range(current_clip, to_download+1):
                     self.download_vid(filename, clip)
+                    if self.args.dump_pagemeta:
+                        self.dump_page_meta(filename, clip)
                     url = self.page.url
                     next_time = str(self.metadata["nextClipStartTime"])
                     if next_time != "-1":
@@ -312,3 +424,40 @@ def get_filepath(user_fname:str, file_fname:str, extension:str, clip:int=None, a
             sys.exit(0)
         os.remove(filepath)
     return filepath
+
+
+def shift_time_delta(time_str:str, delta_second:int=0, with_ms:bool=False):
+    """
+    Shift given time by adding `delta_second` seconds (can be negative), then format it.
+    """
+    tmp_timedelta = parse_timedelta(time_str)
+    total_seconds = int(tmp_timedelta.total_seconds()) + delta_second
+    hours, rem = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    output = f'{hours:02d}:{minutes:02d}:{seconds:02d}'
+    if with_ms:
+        output += f'.{tmp_timedelta.microseconds:03d}'
+    return output
+
+
+def parse_timedelta(value):
+    """
+    Convert input string to timedelta.
+
+    Supported strings are like `01:23:45.678`.
+    """
+    value = re.sub(r"[^0-9:.]", "", value)
+    if not value:
+        return
+    if "." in value:
+        ms = int(value.split(".")[1])
+        value = value.split(".")[0]
+    else:
+        ms = 0
+    delta = datetime.timedelta(**{
+        key:float(val)
+        for val, key in zip(value.split(":")[::-1],
+                            ("seconds", "minutes", "hours", "days"))
+    })
+    delta += datetime.timedelta(microseconds=ms)
+    return delta
