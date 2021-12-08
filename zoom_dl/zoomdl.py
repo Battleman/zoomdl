@@ -111,7 +111,7 @@ class ZoomDL():
         all_urls = {
             "camera": self.metadata.get("viewMp4Url"),
             "screen": self.metadata.get("shareMp4Url"),
-            # TODO: not sure what the video below actually is, need more recordings to find out
+            # the link below is valid only if an invalid UA is passed
             "unknown": self.metadata.get("url"),
         }
         for key, url in all_urls.copy().items():
