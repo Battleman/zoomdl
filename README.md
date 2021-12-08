@@ -69,7 +69,7 @@ If there is a domain in your url, make sure to include it, it's crucial.
 * `-d/--filename-add-date` will append the date of the recording to the filename. **without effect if `-f` is specified**
 * `--user-agent` (no shorthand notation): lets you specify a custom User-Agent (only do that if you know what you're doing and why)
 * `--cookies` (no shorthand notation): specify the path to a cookie jar file.
-* `--save-chat` (no shorthand notation): save chat messages in the meeting to either a plain-text file or `.srt` subtitle file.
+* `--save-chat` (no shorthand notation): save chat messages in the meeting to either a plain-text file or `.srt` subtitle file. Known issue for this function: #70
 * `--chat-subtitle-dur` (no shorthand notation): set the duration in seconds that a chat message subtitle appears on the screen. The default value is 3 (seconds). Only works when you specify `--save-chat srt`.
 * `--save-transcript` (no shorthand notation): save audio transcripts in the meeting to either a plain-text file or `.srt` subtitle file.
 * `--dump-pagemeta` (no shorthand notation): dump the page's meta data to a json file for further usages. Usually you do not need this.
