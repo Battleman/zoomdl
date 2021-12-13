@@ -8,6 +8,7 @@ import sys
 import demjson
 import requests
 from tqdm import tqdm
+from typing import Optional
 
 from .utils import ZoomdlCookieJar
 
@@ -59,12 +60,10 @@ class ZoomDL():
         """Change page, with side methods."""
         self._print("Changing page to {}".format(url), 0)
         self.page = self.session.get(url)
-        #self.check_captcha()
+        # self.check_captcha()
 
-    def get_page_meta(self) -> dict:
+    def get_page_meta(self) -> Optional[dict]:
         """Retrieve metadata from the current self.page.
-
-
 
         Returns:
             dict: dictionary of all relevant metadata
@@ -105,9 +104,10 @@ class ZoomDL():
             meta["url"] = vid_url_match.group(1)
         return meta
 
-    def download_vid(self, fname, clip:int=None):
+    def download_vid(self, fname, clip: int = None):
         """Download one recording, and save it at fname."""
-        self._print("Downloading filename {}, clip={}".format(fname, str(clip)), 0)
+        self._print("Downloading filename {}, clip={}".format(
+            fname, str(clip)), 0)
         all_urls = {
             "camera": self.metadata.get("viewMp4Url"),
             "screen": self.metadata.get("shareMp4Url"),
@@ -118,7 +118,8 @@ class ZoomDL():
             if url is None or url == "":
                 all_urls.pop(key)
         if len(all_urls) > 1:
-            self._print("Found {} screens, downloading all of them".format(len(all_urls)),
+            self._print((f"Found {len(all_urls)} screens, "
+                         "downloading all of them"),
                         1)
             self._print(all_urls, 0)
         for vid_name, vid_url in all_urls.items():
@@ -127,11 +128,13 @@ class ZoomDL():
                     self.metadata.get("r_meeting_topic")).replace(" ", "_")
             if (self.args.filename_add_date and
                     self.metadata.get("r_meeting_start_time")):
-                name = name + "-" + self.metadata.get("r_meeting_start_time").replace(" ", "_")
+                name = name + "-" + \
+                    self.metadata.get("r_meeting_start_time").replace(" ", "_")
             self._print("Found name is {}, extension is {}"
                         .format(name, extension), 0)
             vid_name_appendix = f"_{vid_name}" if len(all_urls) > 1 else ""
-            filepath = get_filepath(fname, name, extension, clip, vid_name_appendix)
+            filepath = get_filepath(
+                fname, name, extension, clip, vid_name_appendix)
             filepath_tmp = filepath + ".part"
             self._print("Full filepath is {}, temporary is {}".format(
                 filepath, filepath_tmp), 0)
@@ -149,17 +152,18 @@ class ZoomDL():
             headers = {"Range": "bytes={}-".format(start_bytes)}
             vid = self.session.get(vid_url, headers=headers, stream=True)
             if vid.status_code in [200, 206] and total_size > 0:
-                with open(filepath_tmp, "ab") as f, tqdm(total=total_size,
-                                                         unit='B',
-                                                         initial=start_bytes,
-                                                         dynamic_ncols=True,
-                                                         unit_scale=True,
-                                                         unit_divisor=1024) as pbar:
-                    for data in vid.iter_content(1024):
-                        if data:
-                            pbar.update(len(data))
-                            f.write(data)
-                            f.flush()
+                with open(filepath_tmp, "ab") as f:
+                    with tqdm(total=total_size,
+                              unit='B',
+                              initial=start_bytes,
+                              dynamic_ncols=True,
+                              unit_scale=True,
+                              unit_divisor=1024) as pbar:
+                        for data in vid.iter_content(1024):
+                            if data:
+                                pbar.update(len(data))
+                                f.write(data)
+                                f.flush()
                 self._print("Done!", 1)
                 os.rename(filepath_tmp, filepath)
             else:
@@ -188,8 +192,7 @@ class ZoomDL():
             if self.args.user_agent is None:
                 if self.args.filename_add_date:
                     self._print("Forcing custom UA to have the date")
-                    # if date is required, need invalid UA
-                    # 'invalid' User-Agent
+                    # if date is required, need 'invalid' User-Agent
                     ua = "ZoomDL http://github.com/battleman/zoomdl"
                 else:
                     self._print("Using standard Windows UA")
@@ -236,17 +239,16 @@ class ZoomDL():
                         self._change_page(url)
                         self.metadata = self.get_page_meta()
 
-    def check_captcha(self):
-        """Check whether or not a page is protected by CAPTCHA.
-
-        TO BE IMPLEMENTED!!
-        """
-        self._print("Checking CAPTCHA", 0)
-        captcha = False  # FIXME
-        if captcha:
-            self._print("The page {} is captcha-protected. Unable to download"
-                        .format(self.page.url))
-            sys.exit(1)
+    # def check_captcha(self):
+    #     """Check whether or not a page is protected by CAPTCHA.
+    #     TO BE IMPLEMENTED!!
+    #     """
+    #     self._print("Checking CAPTCHA", 0)
+    #     captcha = False  # FIXME
+    #     if captcha:
+    #         self._print((f"The page {self.page.url} is captcha-protected. "
+    #         "Unable to download"))
+    #         sys.exit(1)
 
     def authenticate(self):
         # that shit has a password
@@ -270,6 +272,7 @@ class ZoomDL():
                             4)
             self._print("\n".join(input_tags), 0)
             sys.exit(1)
+
         # create POST request
         data = {"id": meet_id, "passwd": self.args.password,
                 "action": "viewdetailpage"}
@@ -294,9 +297,12 @@ def confirm(message):
     return answer == "y"
 
 
-def get_filepath(user_fname:str, file_fname:str, extension:str, clip:int=None, appendix:str=""):
+def get_filepath(user_fname: str,
+                 file_fname: str,
+                 extension: str,
+                 clip: int = None,
+                 appendix: str = "") -> str:
     """Create an filepath."""
-
     if user_fname is None:
         basedir = os.getcwd()
         # remove illegal characters
