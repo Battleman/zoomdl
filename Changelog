@@ -1,3 +1,9 @@
+version 2021.12.13
+- Fix naming when multiple screens are present
+- Don't rely on invalid User Agent
+- Allow to download chat and transcript to text
+Special thanks to @mchobbylong for the PRs!
+
 version 2021.07.26
 - Fix IndexError on empty string (#60, #58)
 - Fix duplicate download on clips (#59)
