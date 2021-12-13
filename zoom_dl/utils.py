@@ -153,4 +153,33 @@ def parseOpts(args: List[str]):
                         metavar=("path/to/the/cookies.txt"),
                         required=False)
 
+    PARSER.add_argument("--save-chat",
+                        help=("Save chat in the meeting as a plain-text "
+                              "file or .srt subtitle. "
+                              "Specify mode as \"txt\" for plain-text, "
+                              "or \"srt\" for .srt subtitle"),
+                        metavar="mode",
+                        choices=["txt", "srt"],
+                        default=None)
+    PARSER.add_argument("--chat-subtitle-dur",
+                        help=("Duration in seconds that a chat message"
+                              "appears on the screen"),
+                        metavar="number",
+                        type=_check_positive,
+                        default=3)
+    PARSER.add_argument("--save-transcript",
+                        help=("Save transcripts in the meeting as a "
+                              "plain-text file or .srt subtitle. Specify"
+                              " mode as \"txt\" for plain-text, "
+                              "or \"srt\" for .srt subtitle"),
+                        metavar="mode",
+                        choices=["txt", "srt"],
+                        default=None)
+
+    PARSER.add_argument("--dump-pagemeta",
+                        help=("Dump page metas in json format"
+                              " for further usages"),
+                        default=False,
+                        action='store_true')
+
     return PARSER.parse_args(args)
