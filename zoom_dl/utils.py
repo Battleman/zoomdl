@@ -8,14 +8,17 @@ from http.cookiejar import MozillaCookieJar
 import collections
 import io
 import sys
+from typing import List
 
 
 class ZoomdlCookieJar(MozillaCookieJar):
-    """
+    """Define a cookie jar.
+
     Code freely adapted from Youtube-DL's YoutubeCookieJar
     https://github.com/ytdl-org/youtube-dl/
     For file format, see https://curl.haxx.se/docs/http-cookies.html
     """
+
     _HTTPONLY_PREFIX = '#HttpOnly_'
     _ENTRY_LEN = 7
     _CookieFileEntry = collections.namedtuple(
@@ -90,7 +93,7 @@ def _valid_path(value):
     return value
 
 
-def parseOpts():
+def parseOpts(args: List[str]):
     """Parse command line arguments.
 
     Returns:
@@ -145,7 +148,9 @@ def parseOpts():
                         type=int,
                         default=1)
 
-    PARSER.add_argument("--cookies", help="Path to a cookies file in Netscape Format",
+    PARSER.add_argument("--cookies", help=("Path to a cookies file "
+                                           "in Netscape Format"),
                         metavar=("path/to/the/cookies.txt"),
                         required=False)
-    return PARSER.parse_args()
+
+    return PARSER.parse_args(args)

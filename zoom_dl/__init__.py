@@ -4,11 +4,12 @@
 
 from .zoomdl import ZoomDL
 from .utils import parseOpts
+import sys
 
 
 def main():
     """Get parsed options, sanity check them, then call ZoomDL."""
-    args = parseOpts()
+    args = parseOpts(sys.argv[1:])
 
     if args.log_level > 5:
         raise ValueError("Log-level value should be between 0 and 5, included")
