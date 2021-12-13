@@ -58,7 +58,7 @@ Grab the dedicated binary `zoomdl.exe`, and launch it using your command line. I
 
 If there is a domain in your url, make sure to include it, it's crucial.
 ## Usage
-`zoomdl [-h] -u/--url 'url' [-f/--fname 'filename'] [-p/--password 'password'] [-c/--count-clips count] [-d/--filename-add-date] [--user-agent 'custom_user_agent]`
+`zoomdl [-h] -u/--url 'url' [-f/--fname 'filename'] [-p/--password 'password'] [-c/--count-clips count] [-d/--filename-add-date] [--user-agent 'custom_user_agent'] [--save-chat (txt|srt)] [--chat-subtitle-dur number] [--save-transcript (txt|srt)] [--dump-pagemeta]`
 * `-u/--url` is mandatory, it represents the URL of the video
 * `-f/--fname` is optional, it is the name of the resulting file _without extension_. If nothing is provided, the default name given by Zoom will be used. Extension (`.mp4`, `.mkv`,... is automatic)
 * `-p/--password` is too optional. Set it when your video has a password.
@@ -68,7 +68,11 @@ If there is a domain in your url, make sure to include it, it's crucial.
   * \> 1 means: download until you reach this number of clip (or the end)
 * `-d/--filename-add-date` will append the date of the recording to the filename. **without effect if `-f` is specified**
 * `--user-agent` (no shorthand notation): lets you specify a custom User-Agent (only do that if you know what you're doing and why)
-* `--cookies` (no shorthand notation): specify the path to a cookie jar file. 
+* `--cookies` (no shorthand notation): specify the path to a cookie jar file.
+* `--save-chat` (no shorthand notation): save chat messages in the meeting to either a plain-text file or `.srt` subtitle file. Known issue for this function: #70
+* `--chat-subtitle-dur` (no shorthand notation): set the duration in seconds that a chat message subtitle appears on the screen. The default value is 3 (seconds). Only works when you specify `--save-chat srt`.
+* `--save-transcript` (no shorthand notation): save audio transcripts in the meeting to either a plain-text file or `.srt` subtitle file.
+* `--dump-pagemeta` (no shorthand notation): dump the page's meta data to a json file for further usages. Usually you do not need this.
 
 ### Cookies / SSO / Captcha / Login
 Some videos are protected with more than a password. You require an SSO, or to solve a captcha. The `cookies` option allows you to perform all the steps in a browser, and then use the cookies to access the video. This functionality is similar to Youtube-dl's same option.
@@ -115,8 +119,8 @@ If you wish to build from sources, here is a quick howto. First, you need to clo
 Run the command `./devscript.sh compile`. It basically installs all the dependencies with pip in a temporary directory, then zips it.
 
 ### Windows
-* Install [pyinstaller](https://www.pyinstaller.org/) (usually `pip install -U pyinstaller`) 
-* Run the command `wincompile.bat`. It calls just calls `pyinstaller` and cleans the generated folders and files, leaving only the exe file. 
+* Install [pyinstaller](https://www.pyinstaller.org/) (usually `pip install -U pyinstaller`)
+* Run the command `wincompile.bat`. It calls just calls `pyinstaller` and cleans the generated folders and files, leaving only the exe file.
 
 ## Requirements
 All dependencies are bundled within the executable. This allows to make a standalone execution without need for external libraries.
