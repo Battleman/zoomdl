@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-import demjson
+import demjson3
 import requests
 from tqdm import tqdm
 from typing import Optional
@@ -90,8 +90,8 @@ class ZoomDL():
                                 self.page.text)
         if meta2_match is not None:
             try:
-                meta2 = demjson.decode(meta2_match.group(1))
-            except demjson.JSONDecodeError:
+                meta2 = demjson3.decode(meta2_match.group(1))
+            except demjson3.JSONDecodeError:
                 self._print("[WARNING] Error with the meta parsing. This "
                             "should not be critical. Please contact a dev.", 2)
             meta.update(meta2)
@@ -107,9 +107,9 @@ class ZoomDL():
         if len(chat_match) > 0:
             for matched_json in chat_match:
                 try:
-                    message = demjson.decode(matched_json)
+                    message = demjson3.decode(matched_json)
                     chats.append(message)
-                except demjson.JSONDecodeError:
+                except demjson3.JSONDecodeError:
                     self._print("[WARNING] Error with the meta parsing. This "
                                 "should not be critical. "
                                 "Please contact a dev.", 2)
@@ -125,9 +125,9 @@ class ZoomDL():
         if len(transcript_match) > 0:
             for matched_json in transcript_match:
                 try:
-                    message = demjson.decode(matched_json)
+                    message = demjson3.decode(matched_json)
                     transcripts.append(message)
-                except demjson.JSONDecodeError:
+                except demjson3.JSONDecodeError:
                     self._print("[WARNING] Error with the meta parsing. This "
                                 "should not be critical. "
                                 "Please contact a dev.", 2)

@@ -5,3 +5,5 @@ dist/
 *.exe.spec
 .vscode
 quick_dl.py
+zoomdl
+zoomdl.exe
