@@ -1,5 +1,5 @@
 requests==2.23
 #clint==0.5.1
-demjson==2.2.4
+demjson3==3.0.5
 tqdm==4.50.2
 # browser_cookie3==0.11.4
