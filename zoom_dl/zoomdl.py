@@ -26,6 +26,7 @@ class ZoomDL():
         self.url, self.domain, self.subdomain = "", "", ""
         self.metadata = None
         self.session = requests.session()
+        self.exit_code = 0
 
         self.loglevel = self.args.log_level
 
@@ -68,6 +69,11 @@ class ZoomDL():
         """
         if level < 5 and level >= self.loglevel:
             print(message)
+
+        """Set system exit code to 1 if zoomdl encounters a (critical) error."""
+        # there is potential here for more granular exit codes if desired
+        if level < 5 and level >= 3:
+            self.exit_code = 1
 
     def _change_page(self, url):
         """Change page, with side methods."""
