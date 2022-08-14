@@ -17,3 +17,5 @@ def main():
     all_urls = [args.url]  # prepare for batch reading
     zdl = ZoomDL(args)
     zdl.download(all_urls)
+
+    sys.exit(zdl.exit_code)
