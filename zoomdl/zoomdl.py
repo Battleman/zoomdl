@@ -360,7 +360,8 @@ class ZoomDL():
             count_clips = self.args.count_clips
             filename = self.args.filename
             if count_clips == 1:  # only download this
-                self.download_vid(filename)
+                if not self.args.simulate:
+                    self.download_vid(filename)
                 if self.args.dump_pagemeta:
                     self.dump_page_meta(filename)
             else:  # download multiple
@@ -369,7 +370,8 @@ class ZoomDL():
                 else:  # download as many as asked (or possible)
                     to_download = min(count_clips, total_clips)
                 for clip in range(current_clip, to_download+1):
-                    self.download_vid(filename, clip)
+                    if not self.args.simulate:
+                        self.download_vid(filename, clip)
                     if self.args.dump_pagemeta:
                         self.dump_page_meta(filename, clip)
                     url = self.page.url
