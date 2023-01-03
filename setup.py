@@ -10,7 +10,7 @@ try:
     with open(os.path.join(current_directory, 'README.md'), encoding='utf-8') as f:
         long_description = f.read()
 except Exception:
-    long_description = ''
+    long_description = ""
 
 setup(
     name="zoomdl",
