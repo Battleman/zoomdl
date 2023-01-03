@@ -22,7 +22,7 @@ setup(
     packages=['zoomdl'],
     package_data={'zoomdl': ['zoomdl/*']},
     include_package_data=True,
-    install_requires=['setuptools', 'requests~=2.23', 'demjson3~=3.0.5', 'tqdm~=4.50.2'],
+    install_requires=['demjson3~=3.0.6', 'requests~=2.28.1', 'tqdm~=4.64.1'],
     entry_points={
         "console_scripts": [
             "zoomdl=zoomdl:main",
