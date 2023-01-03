@@ -101,7 +101,7 @@ def parseOpts(args: List[str]):
         argparse.Namespace: Namespace of the parsed arguments.
     """
     PARSER = argparse.ArgumentParser(
-        description="Utility to download zoom videos.\nVersion: " + version("zoomdl"),
+        description="Utility to download zoom videos. Version: " + version("zoomdl"),
         prog="zoomdl",
         formatter_class=(lambda prog:
                          argparse.HelpFormatter(prog,
