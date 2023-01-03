@@ -14,7 +14,7 @@ if __package__ is None and not hasattr(sys, 'frozen'):
     sys.path.insert(0, os.path.dirname(path))
     print(os.path.dirname(path))
 
-import zoom_dl
+import zoomdl
 
 if __name__ == '__main__':
-    zoom_dl.main()
+    zoomdl.main()
