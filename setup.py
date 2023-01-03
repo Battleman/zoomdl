@@ -2,7 +2,7 @@
 from setuptools import setup
 import os
 
-import zoomdl
+import version
 
 # README as long_description
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -14,7 +14,7 @@ except Exception:
 
 setup(
     name="zoomdl",
-    version=zoomdl.__version__,
+    version=version.__version__,
     description="Download Zoom recorded meetings easily",
     url="https://github.com/Battleman/zoomdl",
     author="Olivier Cloux",
