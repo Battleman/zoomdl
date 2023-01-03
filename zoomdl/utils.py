@@ -9,6 +9,7 @@ import collections
 import io
 import sys
 from typing import List
+from importlib.metadata import version
 
 
 class ZoomdlCookieJar(MozillaCookieJar):
@@ -100,7 +101,7 @@ def parseOpts(args: List[str]):
         argparse.Namespace: Namespace of the parsed arguments.
     """
     PARSER = argparse.ArgumentParser(
-        description="Utility to download zoom videos",
+        description="Utility to download zoom videos.\nVersion: " + version("zoomdl"),
         prog="zoomdl",
         formatter_class=(lambda prog:
                          argparse.HelpFormatter(prog,
