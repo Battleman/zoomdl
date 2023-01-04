@@ -13,7 +13,7 @@ except Exception:
 
 setup(
     name="zoomdl",
-    version="2023.01.03_homebrew",
+    version="2023.01.04_homebrew",
     description="Download Zoom recorded meetings easily",
     url="https://github.com/Battleman/zoomdl",
     author="Olivier Cloux",
