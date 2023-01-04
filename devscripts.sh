@@ -28,9 +28,9 @@ install(){
 
 if [[ $# -ne 1 ]]
 then
-		echo "Usage: $0 'command'"
-		echo "Valid commands: 'build', 'compile', 'install'"
-		exit 1
+	echo "Usage: $0 'command'"
+	echo "Valid commands: 'build', 'compile', 'install'"
+	exit 1
 else
 	"$@"
 fi
