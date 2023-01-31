@@ -22,8 +22,8 @@ If you are interested in helping in any way (there are various ways to help!), g
     - [Cookies / SSO / Captcha / Login](#cookies--sso--captcha--login)
     - [About syntax](#about-syntax)
     - [About quotes [IMPORTANT]](#about-quotes-important)
-    - [Validity of urls](#validity-of-urls)
-  - [Building from sources](#building-from-sources)
+    - [Validity of URLs](#validity-of-urls)
+  - [Building from source](#building-from-source)
     - [Linux](#linux)
     - [Windows](#windows-1)
   - [Requirements](#requirements)
@@ -53,7 +53,8 @@ You will be prompted to enter your password (your computer password, not Zoom). 
 Once you have done that, you can use your terminal and type the commands normally.
 
 ### Windows
-**This is still in beta**
+**This is still in beta.**
+
 Grab the dedicated binary `zoomdl.exe`, and launch it using your command line. If you don't know how, visit [this WikiHow page](https://www.wikihow.com/Run-an-EXE-File-From-Command-Prompt). You may encounter a warning from your anti-virus, you can ignore them (I'm not evil, pinky-promise). You probably don't need a Python3 installation, it *should* be contained within the executable.
 
 ## Usage
@@ -64,7 +65,7 @@ Grab the dedicated binary `zoomdl.exe`, and launch it using your command line. I
 * `-c/--count-clips`: Sometimes, one URL can contain multiple clips. This sets the number of clips that will be downloaded. Recordings with multiple clips seem to be quite rare, but do exist. The parameter `count` works as follows:
   * 0 - download all available clips, starting from the current clip
   * 1 - download only the first/given clip
-  * n (n\>1) - download all clips until the n'th clip is reached, or there are no more clips
+  * n (n\>1) - download all clips until the n'th clip is reached, or until there are no more clips
 * `-d/--filename-add-date` will append the date of the recording to the filename; **this option has no effect if `-f` is specified**
 * `--user-agent` (no shorthand notation): specifies a custom User-Agent (only do this if you know what you're doing and why).
 * `--cookies` (no shorthand notation): specifies the path to a cookie jar file.
