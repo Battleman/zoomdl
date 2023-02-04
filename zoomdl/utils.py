@@ -147,6 +147,12 @@ def parseOpts(args: List[str]):
                         metavar="level",
                         type=int,
                         default=1)
+    PARSER.add_argument("-s", "--simulate",
+                        help=("Do all metadata checks and run through the "
+                              "whole program, but without actually "
+                              "downloading any video files"),
+                        default=False,
+                        action='store_true')
 
     PARSER.add_argument("--cookies", help=("Path to a cookies file "
                                            "in Netscape Format"),
