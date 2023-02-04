@@ -17,7 +17,7 @@ setup(
     description="Download Zoom recorded meetings easily",
     url="https://github.com/Battleman/zoomdl",
     author="Olivier Cloux",
-    license="MIT",
+    license="GPL-3.0-only",
     packages=["zoomdl"],
     package_data={"zoomdl": ["zoomdl/*"]},
     include_package_data=True,
