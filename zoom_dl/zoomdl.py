@@ -86,7 +86,7 @@ class ZoomDL():
         meta = dict(re.findall(r'type="hidden" id="([^"]*)" value="([^"]*)"',
                                text))
         # if javascript was correctly loaded, look for injected metadata
-        meta2_match = re.search("window.__data__ = ({(?:.*\n)*});",
+        meta2_match = re.search("window.__data__ = ({(?:.*\n)*?});",
                                 self.page.text)
         if meta2_match is not None:
             try:
