@@ -1,14 +1,11 @@
+# THIS APPLICATION IS ARCHIVED
+I don't use Zoom anymore, lack access to any kind of SSO to test critical parts of the application, and have currently other focus. This application may or may not work. This was developed early in the boom of Zoom at work and in classrooms, as a quick and dirty way to download videos marked as non-downloadable (which I hate). I shared with a few friends, shared it here, and it kinda grew a bit. At the time, other apps such as youtube-dl hadn't caught up, and often didn't work easily. They are now up to date and work just fine. 
+
+I'm glad this application helped people. I'm now retiring it. Anyone is welcome to fork and keep developing it, as long as the license is respected.
+
+Peace
+
 # ZoomDL
-
-## Support
-Like this project? Consider supporting me, for more awesome updates
-
-<a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/Battleman"><img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee"><span style="margin-left:15px;font-size:28px !important;">Buy me a coffee</span></a>
-
-## ANNOUNCEMENT LOOKING FOR TESTERS
-More and more, I face the challenge of testing. I code on my own Debian machine, and use a Windows 10 VM to compile the executable. But testing has become more and more a challenge, especially for new features.
-
-If you are anyhow interested in helping (there are various ways to!), go to the dedicated issue (#32), and comment there. The concept is still very young for me, sorry that.
 
 - [ZoomDL](#zoomdl)
   - [Support](#support)
